@@ -1,0 +1,817 @@
+{
+  "comments_count": 3,
+  "created_at": "2026/05/12 13:00:54 -0400",
+  "currency": "EUR",
+  "difficulty_average": 5.0,
+  "difficulty_count": 3,
+  "downloadable": true,
+  "favorites_count": 963,
+  "free": false,
+  "gauge": 20.0,
+  "gauge_divisor": 4,
+  "gauge_pattern": "Stockinette stitch",
+  "gauge_repeats": null,
+  "generally_available": "2026/05/12 13:00:54 -0400",
+  "has_uk_terminology": false,
+  "has_us_terminology": false,
+  "id": 7527286,
+  "name": "Lauro Sweater",
+  "pdf_url": null,
+  "permalink": "lauro-sweater",
+  "price": 8.5,
+  "projects_count": 60,
+  "published": "2026/05/01",
+  "queued_projects_count": 71,
+  "rating_average": 4.666666666666667,
+  "rating_count": 3,
+  "row_gauge": 31.0,
+  "updated_at": "2026/05/12 13:01:32 -0400",
+  "url": "https://www.minimiknitdesign.com/?p=4769",
+  "yardage": 651,
+  "yardage_max": 1515,
+  "yarn_list_type": 1,
+  "personal_attributes": null,
+  "sizes_available": "Sizes 1 (2, 3, 4, 5) {6, 7, 8, 9, 10}",
+  "product_id": 1074988,
+  "unlisted_product_ids": null,
+  "currency_symbol": "€",
+  "ravelry_download": true,
+  "download_location": {
+    "type": "ravelry",
+    "free": false,
+    "url": "http://www.ravelry.com/purchase/minimi-knit-design/1074988"
+  },
+  "pdf_in_library": false,
+  "volumes_in_library": null,
+  "gauge_description": "20 stitches and 31 rows = 4 inches in Stockinette stitch",
+  "yarn_weight_description": "DK (11 wpi)",
+  "yardage_description": "651 - 1515 yards",
+  "pattern_needle_sizes": [
+    {
+      "id": 6,
+      "us": "6 ",
+      "metric": 4.0,
+      "us_steel": null,
+      "crochet": false,
+      "knitting": true,
+      "hook": "G",
+      "name": "US 6  - 4.0 mm",
+      "pretty_metric": "4"
+    }
+  ],
+  "notes_html": "\n<blockquote>\n<p>Enjoy 15% off the pattern with the code <strong>LAURO</strong> from now through May 23, any time zone. Happy knitting!</p>\n</blockquote>\n\n<p>Lauro Sweater is a raglan pullover with a lace motif running along the raglan lines and flowing through the body. It is inspired by the structural beauty of lauro leaves, whose Mediterranean perfume evokes summer.</p>\n\n<p>The sweater is worked seamlessly from the top down, allowing you to easily adjust the length of both the body and the sleeves. The neckband is worked last by picking up stitches along the neckline. Short rows are used to shape the neckline.</p>\n\n<p>This pattern is graded with inclusive sizing in mind, designed to fit actual bust sizes from 76 cm / 30 inches to 168 cm / 66 inches. Measurements are given in both cm and inches.</p>\n\n<p><strong>Sizes</strong> <br /> #sizeinclusive <br />Sizes 1 (2, 3, 4, 5) {6, 7, 8, 9, 10} designed to fit actual bust circumference of 76 (86.5, 96.5, 106.5, 117) {127, 137, 147.5, 157.5, 167.5} cm / 30 (34, 38, 42, 46) {50, 54, 58, 62, 66} inches.</p>\n\n<p>Finished bust circumference: 92 (100, 110, 120, 130) {140, 152, 162, 172, 180} cm / 36.25 (39.25, 43.25, 47.25, 51.25) {55, 59.75, 63.75, 67.75, 70.75} inches</p>\n\n<p>This garment is intended to be worn with 12.5-16 cm / 5-6.25 inches positive ease. For between sizes, choose the smaller size.</p>\n\n<p>Shown in size 1, modeled with 13 cm / 5 inches of positive ease.</p>\n\n<p><strong>Gauge</strong></p>\n\n<p>20 sts and 31 rows = 10 cm / 4 inches in Stockinette stitch worked flat and in the round, blocked.</p>\n\n<p><strong>Materials</strong></p>\n\n<p><strong>Needles</strong></p>\n\n<p>4 mm / US 6 circular needle of length 80-100 cm / 32-40 inches, depending on your size; adjust needle size if necessary to obtain gauge.</p>\n\n<p>3.5 mm / US 4 circular needle of length 80-100 cm / 32-40 inches, depending on your size, for the hem.</p>\n\n<p>4 mm / US 6 needles in your preferred style for small circumference knitting in the round, for the sleeves.</p>\n\n<p>3.5 mm / US 4 needles in your preferred style for small circumference knitting in the round, for the cuffs.</p>\n\n<p>4.5 mm / US 7 needle, any kind, for binding off.</p>\n\n<p><strong>Notions</strong></p>\n\n<p>Stitch markers; waste yarn; yarn needle</p>\n\n<p><strong>Yarn</strong></p>\n\n<p>3 strands of lace weight yarns held together, knit to a DK gauge.</p>\n\n<ol>\n<li>Lace weight mohair yarn</li>\n</ol>\n\n<p>Yardage: 595 (660, 750, 815, 895) {1015, 1100, 1170, 1275, 1385} m / 650 (725, 820, 895, 980) {1110, 1205, 1280, 1395, 1515} yds, including 10% allowance.</p>\n\n<p><em>Shown here: ITO Sensai (60% mohair, 40% silk; 240 m / 262 yds, 20 g / 0.71 oz skein; color: #343 Angora): 3 (3, 4, 4, 4) {5, 5, 5, 6, 6} skeins</em></p>\n\n<ol>\n<li>Lace weight smooth yarnYardage: 630 (700, 795, 870, 950) {1080, 1170, 1240, 1355, 1470} m / 690 (765, 870, 950, 1040) {1180, 1275, 1355, 1485, 1605} yds, including 10% allowance</li>\n</ol>\n\n<p><em>Shown here: ITO Kinu (100% silk; 425 m / 465 yds, 50 g / 1.76 oz cone; color: #350 Angora): 2 (2, 2, 3, 3) {3, 3, 3, 4, 4} cones</em></p>\n\n<ol>\n<li>Lace weight smooth yarnYardage: 630 (700, 790, 865, 945) {1070, 1160, 1235, 1350, 1460} m / 685 (765, 865, 945, 1035) {1170, 1270, 1350, 1475, 1595} yds, including 10% allowance</li>\n</ol>\n\n<p><em>Shown here: ITO Shio (100% wool; 480 m / 525 yds, 40 g / 1.41 oz cone; color: #443 Snow Gray): 2 (2, 2, 2, 2) {3, 3, 3, 3, 4} cones</em></p>\n\n<p><strong>All three yarns are held together in the pattern.</strong></p>\n\n<p><em>Note: If you are using a single strand of true DK weight yarn, you would need 595 (660, 750, 815, 895) {1015, 1100, 1170, 1275, 1385} m / 650 (725, 820, 895, 980) {1110, 1205, 1280, 1395, 1515} yds, including 10% allowance.</em></p>\n\n<p><strong>Required Skills</strong></p>\n\n<p>Knitting in the round, long-tail cast-on, picking up stitches, short rows</p>\n",
+  "notes": "> Enjoy 15% off the pattern with the\r\n> code **LAURO** from now through May\r\n> 23, any time zone. Happy knitting!\r\n\r\nLauro Sweater is a raglan pullover with a lace motif running along the raglan lines and flowing through the body. It is inspired by the structural beauty of lauro leaves, whose Mediterranean perfume evokes summer.\r\n\r\nThe sweater is worked seamlessly from the top down, allowing you to easily adjust the length of both the body and the sleeves. The neckband is worked last by picking up stitches along the neckline. Short rows are used to shape the neckline.\r\n\r\nThis pattern is graded with inclusive sizing in mind, designed to fit actual bust sizes from 76 cm / 30 inches to 168 cm / 66 inches. Measurements are given in both cm and inches.\r\n\r\n**Sizes** \r\n#sizeinclusive\r\nSizes 1 (2, 3, 4, 5) {6, 7, 8, 9, 10} designed to fit actual bust circumference of 76 (86.5, 96.5, 106.5, 117) {127, 137, 147.5, 157.5, 167.5} cm / 30 (34, 38, 42, 46) {50, 54, 58, 62, 66} inches. \r\n\r\nFinished bust circumference: 92 (100, 110, 120, 130) {140, 152, 162, 172, 180} cm / 36.25 (39.25, 43.25, 47.25, 51.25) {55, 59.75, 63.75, 67.75, 70.75} inches\r\n\r\nThis garment is intended to be worn with 12.5-16 cm / 5-6.25 inches positive ease. For between sizes, choose the smaller size.\r\n\r\nShown in size 1, modeled with 13 cm / 5 inches of positive ease.\r\n\r\n**Gauge** \r\n\r\n20 sts and 31 rows = 10 cm / 4 inches in Stockinette stitch worked flat and in the round, blocked.\r\n\r\n**Materials**\r\n\r\n**Needles** \r\n\r\n4 mm / US 6 circular needle of length 80-100 cm / 32-40 inches, depending on your size; adjust needle size if necessary to obtain gauge.\r\n\r\n3.5 mm / US 4 circular needle of length 80-100 cm / 32-40 inches, depending on your size, for the hem.\r\n\r\n4 mm / US 6 needles in your preferred style for small circumference knitting in the round, for the sleeves.\r\n\r\n3.5 mm / US 4 needles in your preferred style for small circumference knitting in the round, for the cuffs.\r\n\r\n4.5 mm / US 7 needle, any kind, for binding off.\r\n\r\n**Notions**\r\n\r\nStitch markers; waste yarn; yarn needle\r\n\r\n\r\n\r\n**Yarn** \r\n\r\n3 strands of lace weight yarns held together, knit to a DK gauge.\r\n\r\n1. Lace weight mohair yarn\r\n\r\nYardage: 595 (660, 750, 815, 895) {1015, 1100, 1170, 1275, 1385} m / 650 (725, 820, 895, 980) {1110, 1205, 1280, 1395, 1515} yds, including 10% allowance.\r\n\r\n*Shown here: ITO Sensai (60% mohair, 40% silk; 240 m / 262 yds, 20 g / 0.71 oz skein; color: #343 Angora): 3 (3, 4, 4, 4) {5, 5, 5, 6, 6} skeins*\r\n\r\n2. Lace weight smooth yarnYardage: 630 (700, 795, 870, 950) {1080, 1170, 1240, 1355, 1470} m / 690 (765, 870, 950, 1040) {1180, 1275, 1355, 1485, 1605} yds, including 10% allowance\r\n\r\n*Shown here: ITO Kinu (100% silk; 425 m / 465 yds, 50 g / 1.76 oz cone; color: #350 Angora): 2 (2, 2, 3, 3) {3, 3, 3, 4, 4} cones*\r\n\r\n3. Lace weight smooth yarnYardage: 630 (700, 790, 865, 945) {1070, 1160, 1235, 1350, 1460} m / 685 (765, 865, 945, 1035) {1170, 1270, 1350, 1475, 1595} yds, including 10% allowance\r\n\r\n*Shown here: ITO Shio (100% wool; 480 m / 525 yds, 40 g / 1.41 oz cone; color: #443 Snow Gray): 2 (2, 2, 2, 2) {3, 3, 3, 3, 4} cones*\r\n\r\n**All three yarns are held together in the pattern.** \r\n\r\n*Note: If you are using a single strand of true DK weight yarn, you would need 595 (660, 750, 815, 895) {1015, 1100, 1170, 1275, 1385} m / 650 (725, 820, 895, 980) {1110, 1205, 1280, 1395, 1515} yds, including 10% allowance.*\r\n\r\n**Required Skills**\r\n\r\nKnitting in the round, long-tail cast-on, picking up stitches, short rows",
+  "languages": [
+    {
+      "code": "en",
+      "id": 1,
+      "name": "English",
+      "permalink": "en",
+      "short_name": "English",
+      "universal": false
+    }
+  ],
+  "packs": [
+    {
+      "id": 141118857,
+      "primary_pack_id": null,
+      "project_id": null,
+      "skeins": null,
+      "stash_id": null,
+      "total_grams": null,
+      "total_meters": null,
+      "total_ounces": null,
+      "total_yards": null,
+      "yarn_id": 57845,
+      "yarn_name": "ITO Sensai",
+      "yarn_weight": {
+        "crochet_gauge": "",
+        "id": 7,
+        "knit_gauge": "32-34",
+        "max_gauge": null,
+        "min_gauge": null,
+        "name": "Lace",
+        "ply": "2",
+        "wpi": null
+      },
+      "colorway": null,
+      "shop_name": null,
+      "yarn": {
+        "permalink": "ito-sensai",
+        "id": 57845,
+        "name": "Sensai",
+        "yarn_company_name": "ITO",
+        "yarn_company_id": 7051
+      },
+      "quantity_description": null,
+      "personal_name": null,
+      "dye_lot": null,
+      "color_family_id": null,
+      "grams_per_skein": null,
+      "yards_per_skein": null,
+      "meters_per_skein": null,
+      "ounces_per_skein": null,
+      "prefer_metric_weight": true,
+      "prefer_metric_length": false,
+      "shop_id": null,
+      "thread_size": null
+    },
+    {
+      "id": 141118860,
+      "primary_pack_id": null,
+      "project_id": null,
+      "skeins": null,
+      "stash_id": null,
+      "total_grams": null,
+      "total_meters": null,
+      "total_ounces": null,
+      "total_yards": null,
+      "yarn_id": 59397,
+      "yarn_name": "ITO Kinu",
+      "yarn_weight": {
+        "crochet_gauge": "",
+        "id": 7,
+        "knit_gauge": "32-34",
+        "max_gauge": null,
+        "min_gauge": null,
+        "name": "Lace",
+        "ply": "2",
+        "wpi": null
+      },
+      "colorway": null,
+      "shop_name": null,
+      "yarn": {
+        "permalink": "ito-kinu",
+        "id": 59397,
+        "name": "Kinu",
+        "yarn_company_name": "ITO",
+        "yarn_company_id": 7051
+      },
+      "quantity_description": null,
+      "personal_name": null,
+      "dye_lot": null,
+      "color_family_id": null,
+      "grams_per_skein": null,
+      "yards_per_skein": null,
+      "meters_per_skein": null,
+      "ounces_per_skein": null,
+      "prefer_metric_weight": true,
+      "prefer_metric_length": false,
+      "shop_id": null,
+      "thread_size": null
+    },
+    {
+      "id": 141118858,
+      "primary_pack_id": null,
+      "project_id": null,
+      "skeins": null,
+      "stash_id": null,
+      "total_grams": null,
+      "total_meters": null,
+      "total_ounces": null,
+      "total_yards": null,
+      "yarn_id": 118055,
+      "yarn_name": "ITO Shio",
+      "yarn_weight": {
+        "crochet_gauge": "",
+        "id": 7,
+        "knit_gauge": "32-34",
+        "max_gauge": null,
+        "min_gauge": null,
+        "name": "Lace",
+        "ply": "2",
+        "wpi": null
+      },
+      "colorway": null,
+      "shop_name": null,
+      "yarn": {
+        "permalink": "ito-shio",
+        "id": 118055,
+        "name": "Shio",
+        "yarn_company_name": "ITO",
+        "yarn_company_id": 7051
+      },
+      "quantity_description": null,
+      "personal_name": null,
+      "dye_lot": null,
+      "color_family_id": null,
+      "grams_per_skein": null,
+      "yards_per_skein": null,
+      "meters_per_skein": null,
+      "ounces_per_skein": null,
+      "prefer_metric_weight": true,
+      "prefer_metric_length": false,
+      "shop_id": null,
+      "thread_size": null
+    }
+  ],
+  "printings": [
+    {
+      "created_at": "2026/05/12 13:00:54 -0400",
+      "id": 2545597,
+      "pattern_id": 7527286,
+      "pattern_not_available": false,
+      "primary_source": false,
+      "pattern_source": {
+        "amazon_rating": null,
+        "amazon_url": null,
+        "author": "Cristina T. Ghirlanda",
+        "id": 22260,
+        "list_price": null,
+        "name": "Minimi Knit Design",
+        "out_of_print": false,
+        "pattern_source_type_id": 7,
+        "patterns_count": 153,
+        "permalink": "minimi-knit-design",
+        "price": null,
+        "shelf_image_path": null,
+        "url": "http://www.ravelry.com/stores/minimi-knit-design-vat-it01316780459",
+        "pattern_source_type": {
+          "id": 7,
+          "name": "Ravelry Store",
+          "requires_url": false,
+          "long_name": "Ravelry Store",
+          "can_add_to_library": false
+        }
+      }
+    }
+  ],
+  "yarn_weight": {
+    "crochet_gauge": null,
+    "id": 11,
+    "knit_gauge": "22",
+    "max_gauge": null,
+    "min_gauge": null,
+    "name": "DK",
+    "ply": "8",
+    "wpi": "11"
+  },
+  "craft": {
+    "id": 2,
+    "name": "Knitting",
+    "permalink": "knitting"
+  },
+  "pattern_categories": [
+    {
+      "id": 306,
+      "name": "Pullover",
+      "permalink": "pullover",
+      "parent": {
+        "id": 319,
+        "name": "Sweater",
+        "permalink": "sweater",
+        "parent": {
+          "id": 302,
+          "name": "Clothing",
+          "permalink": "clothing",
+          "parent": {
+            "id": 301,
+            "name": "Categories",
+            "permalink": "categories"
+          }
+        }
+      }
+    },
+    {
+      "id": 307,
+      "name": "Tee",
+      "permalink": "tee",
+      "parent": {
+        "id": 912,
+        "name": "Tops",
+        "permalink": "tops",
+        "parent": {
+          "id": 302,
+          "name": "Clothing",
+          "permalink": "clothing",
+          "parent": {
+            "id": 301,
+            "name": "Categories",
+            "permalink": "categories"
+          }
+        }
+      }
+    }
+  ],
+  "pattern_attributes": [
+    {
+      "id": 2,
+      "permalink": "female"
+    },
+    {
+      "id": 9,
+      "permalink": "teen"
+    },
+    {
+      "id": 10,
+      "permalink": "adult"
+    },
+    {
+      "id": 18,
+      "permalink": "fitted"
+    },
+    {
+      "id": 204,
+      "permalink": "one-piece"
+    },
+    {
+      "id": 205,
+      "permalink": "seamless"
+    },
+    {
+      "id": 206,
+      "permalink": "short-rows"
+    },
+    {
+      "id": 211,
+      "permalink": "top-down"
+    },
+    {
+      "id": 257,
+      "permalink": "positive-ease"
+    },
+    {
+      "id": 286,
+      "permalink": "in-the-round"
+    },
+    {
+      "id": 62,
+      "permalink": "lace"
+    },
+    {
+      "id": 97,
+      "permalink": "crew-neck"
+    },
+    {
+      "id": 103,
+      "permalink": "scoop-neck"
+    },
+    {
+      "id": 114,
+      "permalink": "sleeves"
+    },
+    {
+      "id": 119,
+      "permalink": "short-sleeve"
+    },
+    {
+      "id": 127,
+      "permalink": "raglan-sleeve"
+    },
+    {
+      "id": 150,
+      "permalink": "straight"
+    },
+    {
+      "id": 265,
+      "permalink": "chart"
+    },
+    {
+      "id": 266,
+      "permalink": "phototutorial"
+    },
+    {
+      "id": 267,
+      "permalink": "written-pattern"
+    },
+    {
+      "id": 268,
+      "permalink": "video-tutorial"
+    },
+    {
+      "id": 318,
+      "permalink": "schematic"
+    }
+  ],
+  "pattern_author": {
+    "crochet_pattern_count": 0,
+    "favorites_count": 4496,
+    "id": 8573,
+    "knitting_pattern_count": 163,
+    "name": "Minimi Knit Design",
+    "patterns_count": 163,
+    "permalink": "minimi-knit-design",
+    "notes": "![image alt text][1]\r\n\r\n[Website][2] | [Facebook][3] | [Pinterest][4] | [Twitter][5] | [YouTube][6] | [my Ravelry group][7]\r\n\r\n> If you like my designs, sign up for\r\n> my [newsletter][8] so that you won’t\r\n> miss out on future introductory\r\n> discounts and subscriber-only\r\n> promotions. You can get 15% off your\r\n> next purchase, too!\r\n\r\nFollow me on [Instagram][9] if you want to get a sneak peek on what's coming next!\r\n\r\n\r\n  [1]: http://www.minimiknitdesign.com/img/ravelry_group.png\r\n  [2]: https://www.minimiknitdesign.com\r\n  [3]: https://www.facebook.com/minimiknitdesign\r\n  [4]: http://www.pinterest.com/minimissimi/\r\n  [5]: https://twitter.com/minimiknits/\r\n  [6]: https://www.youtube.com/c/MinimiKnitDesign\r\n  [7]: http://www.ravelry.com/groups/minimi-knit-design\r\n  [8]: http://www.minimiknitdesign.com/?page_id=312\r\n  [9]: http://www.instagram.com/minimiknitdesign",
+    "notes_html": "\n<p><img src=\"https://secure-image-proxy.ravelrycache.com/?target=http%3A%2F%2Fwww.minimiknitdesign.com%2Fimg%2Fravelry_group.png&&key=NkBw7Hnlm8GrYHqk-rJttA\" alt=\"image alt text\" /></p>\n\n<p><a href=\"https://www.minimiknitdesign.com\">Website</a> | <a href=\"https://www.facebook.com/minimiknitdesign\">Facebook</a> | <a href=\"http://www.pinterest.com/minimissimi/\">Pinterest</a> | <a href=\"https://twitter.com/minimiknits/\">Twitter</a> | <a href=\"https://www.youtube.com/c/MinimiKnitDesign\">YouTube</a> | <a href=\"http://www.ravelry.com/groups/minimi-knit-design\">my Ravelry group</a></p>\n\n<blockquote>\n<p>If you like my designs, sign up for my <a href=\"http://www.minimiknitdesign.com/?page_id=312\">newsletter</a> so that you won’t miss out on future introductory discounts and subscriber-only promotions. You can get 15% off your next purchase, too!</p>\n</blockquote>\n\n<p>Follow me on <a href=\"http://www.instagram.com/minimiknitdesign\">Instagram</a> if you want to get a sneak peek on what’s coming next!</p>\n",
+    "users": [
+      {
+        "fave_colors": "",
+        "fave_curse": "",
+        "first_name": "Cristina",
+        "id": 118443,
+        "location": "Toscany, Italy",
+        "username": "minimi",
+        "tiny_photo_url": "https://avatars-d.ravelrycache.com/minimi/1250836/IMGA1316_tiny.JPG",
+        "small_photo_url": "https://avatars-d.ravelrycache.com/minimi/1250836/IMGA1316_small.JPG",
+        "photo_url": "https://avatars-d.ravelrycache.com/minimi/1250836/IMGA1316_large.JPG",
+        "large_photo_url": "https://avatars-d.ravelrycache.com/minimi/1250836/IMGA1316_xlarge.JPG",
+        "about_me": "If you like my designs, sign up for my [newsletter][1] so that you won't miss any new designs or promotions.\r\n\r\n*\\*\\* For pattern support, please contact me by email, I do not log on to Ravelry often. *\r\n\r\n\r\n  [1]: http://www.minimiknitdesign.com/?page_id=312",
+        "about_me_html": "\n<p>If you like my designs, sign up for my <a href=\"http://www.minimiknitdesign.com/?page_id=312\">newsletter</a> so that you won’t miss any new designs or promotions.</p>\n\n<p><em>** For pattern support, please contact me by email, I do not log on to Ravelry often.</em></p>\n",
+        "profile_country_code": "IT",
+        "pattern_author": {
+          "favorites_count": 4496,
+          "id": 8573,
+          "name": "Minimi Knit Design",
+          "patterns_count": 163,
+          "permalink": "minimi-knit-design"
+        },
+        "user_sites": [
+          {
+            "id": 246513,
+            "username": "minimiknitdesign",
+            "url": "http://www.facebook.com/minimiknitdesign",
+            "social_site": {
+              "id": 8,
+              "name": "Facebook",
+              "favicon_url": "http:///images/assets/external/supertinyicons/facebook.svg",
+              "active": true
+            }
+          },
+          {
+            "id": 275638,
+            "username": "minimiknitdesign",
+            "url": "http://minimiknitdesign.etsy.com",
+            "social_site": {
+              "id": 11,
+              "name": "Etsy",
+              "favicon_url": "http:///images/assets/external/supertinyicons/etsy.svg",
+              "active": true
+            }
+          },
+          {
+            "id": 275639,
+            "username": "minimissimi",
+            "url": "http://pinterest.com/minimissimi",
+            "social_site": {
+              "id": 26,
+              "name": "Pinterest",
+              "favicon_url": "http:///images/assets/external/supertinyicons/pinterest.svg",
+              "active": true
+            }
+          },
+          {
+            "id": 538502,
+            "username": "minimiknitdesign",
+            "url": "http://instagram.com/minimiknitdesign",
+            "social_site": {
+              "id": 28,
+              "name": "Instagram",
+              "favicon_url": "http:///images/assets/external/supertinyicons/instagram.svg",
+              "active": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "photos": [
+    {
+      "id": 148446799,
+      "sort_order": 1,
+      "user_id": 118443,
+      "x_offset": -4,
+      "y_offset": 0,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142871414/IMG_6561_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.716875
+    },
+    {
+      "id": 148446800,
+      "sort_order": 2,
+      "user_id": 118443,
+      "x_offset": -11,
+      "y_offset": 0,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846636/IMG_6521_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.748125
+    },
+    {
+      "id": 148446801,
+      "sort_order": 3,
+      "user_id": 118443,
+      "x_offset": -9,
+      "y_offset": 0,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846675/IMG_6495_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.75375
+    },
+    {
+      "id": 148446802,
+      "sort_order": 4,
+      "user_id": 118443,
+      "x_offset": -3,
+      "y_offset": -1,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_small_best_fit.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845912/IMG_6000_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.705
+    },
+    {
+      "id": 148446803,
+      "sort_order": 5,
+      "user_id": 118443,
+      "x_offset": 1,
+      "y_offset": -5,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_small_best_fit.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845931/IMG_6372_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.6775
+    },
+    {
+      "id": 148446804,
+      "sort_order": 6,
+      "user_id": 118443,
+      "x_offset": -1,
+      "y_offset": 0,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846649/IMG_6483_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.7675
+    },
+    {
+      "id": 148446805,
+      "sort_order": 7,
+      "user_id": 118443,
+      "x_offset": -2,
+      "y_offset": -3,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846674/IMG_6574_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.72625
+    },
+    {
+      "id": 148446806,
+      "sort_order": 8,
+      "user_id": 118443,
+      "x_offset": 0,
+      "y_offset": -1,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_small_best_fit.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846672/IMG_6598_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.70375
+    },
+    {
+      "id": 148446807,
+      "sort_order": 9,
+      "user_id": 118443,
+      "x_offset": -2,
+      "y_offset": 0,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846635/IMG_6578_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.71875
+    },
+    {
+      "id": 148446808,
+      "sort_order": 10,
+      "user_id": 118443,
+      "x_offset": -11,
+      "y_offset": -5,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845964/IMG_6410_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.75
+    },
+    {
+      "id": 148446809,
+      "sort_order": 11,
+      "user_id": 118443,
+      "x_offset": -5,
+      "y_offset": -3,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846661/IMG_6514_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.748125
+    },
+    {
+      "id": 148446810,
+      "sort_order": 12,
+      "user_id": 118443,
+      "x_offset": 0,
+      "y_offset": -5,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_small_best_fit.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845919/IMG_6477_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.7
+    },
+    {
+      "id": 148446811,
+      "sort_order": 13,
+      "user_id": 118443,
+      "x_offset": -9,
+      "y_offset": -3,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142846665/IMG_6498_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.75375
+    },
+    {
+      "id": 148446812,
+      "sort_order": 14,
+      "user_id": 118443,
+      "x_offset": -5,
+      "y_offset": -3,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845903/IMG_6057_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.744375
+    },
+    {
+      "id": 148446813,
+      "sort_order": 15,
+      "user_id": 118443,
+      "x_offset": -6,
+      "y_offset": 0,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845913/IMG_6395_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.755625
+    },
+    {
+      "id": 148446814,
+      "sort_order": 16,
+      "user_id": 118443,
+      "x_offset": 0,
+      "y_offset": -5,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_small_best_fit.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845930/IMG_6303_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.671875
+    },
+    {
+      "id": 148446815,
+      "sort_order": 17,
+      "user_id": 118443,
+      "x_offset": -5,
+      "y_offset": -5,
+      "square_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_square.jpg",
+      "medium_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_medium.jpg",
+      "thumbnail_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_thumbnail.jpg",
+      "small_url": "https://images4-g.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_small.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_medium2.jpg",
+      "small2_url": "https://images4-f.ravelrycache.com/uploads/minimi/1142845918/IMG_6293_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.745
+    },
+    {
+      "id": 148446816,
+      "sort_order": 18,
+      "user_id": 118443,
+      "x_offset": 0,
+      "y_offset": -20,
+      "square_url": "https://images4-g.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_square.jpg",
+      "medium_url": "https://images4-f.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_medium.jpg",
+      "thumbnail_url": "https://images4-g.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_thumbnail.jpg",
+      "small_url": "https://images4-f.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_small_best_fit.jpg",
+      "flickr_url": null,
+      "shelved_url": "https://images4-f.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_shelved.jpg",
+      "medium2_url": "https://images4-a.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_medium2.jpg",
+      "small2_url": "https://images4-g.ravelrycache.com/uploads/minimi/1135965537/IMG_5732_small2.jpg",
+      "caption": null,
+      "caption_html": null,
+      "copyright_holder": null,
+      "aspect_ratio": 0.811875
+    }
+  ],
+  "pattern_type": {
+    "clothing": true,
+    "id": 4,
+    "name": "Pullover",
+    "permalink": "pullover"
+  }
+}

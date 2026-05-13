@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import json; p=json.load\\(open\\('data/patterns.json',encoding='utf-8'\\)\\)[0]; print\\(list\\(p.keys\\(\\)\\)\\)\")",
+      "Bash(python -c ' *)"
+    ]
+  }
+}
