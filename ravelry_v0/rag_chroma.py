@@ -57,34 +57,6 @@ def build_metadata(pattern: dict) -> dict:
         "permalink": _safe(pattern.get("permalink")),
     }
 
-
-def load_collection() -> chromadb.Collection:
-    """Load patterns and pre-computed embeddings into an in-memory Chroma collection."""
-    patterns = json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
-    embeddings = np.load(EMBEDDINGS_PATH)
-
-    client = chromadb.Client()
-    collection = client.create_collection(COLLECTION_NAME, metadata={"hnsw:space": "cosine"})
-
-    ids = [str(p["id"]) for p in patterns]
-    documents = [p.get("text_for_embedding", "") for p in patterns]
-    metadatas = [build_metadata(p) for p in patterns]
-    embedding_list = embeddings.tolist()
-
-    # Chroma add() has a hard limit per call; batch in chunks of 500
-    CHUNK = 500
-    for start in range(0, len(ids), CHUNK):
-        collection.add(
-            ids=ids[start : start + CHUNK],
-            documents=documents[start : start + CHUNK],
-            metadatas=metadatas[start : start + CHUNK],
-            embeddings=embedding_list[start : start + CHUNK],
-        )
-
-    print(f"Loaded {collection.count()} patterns into Chroma.")
-    return collection
-
-
 def _build_where(
     craft: str | None,
     free_only: bool,
@@ -104,11 +76,39 @@ def _build_where(
         return conditions[0]
     return {"$and": conditions}
 
+def load_collection() -> tuple[chromadb.Collection, list[dict]]:
+    """Load patterns and pre-computed embeddings into an in-memory Chroma collection.
+    Returns both the collection and the original patterns list for full data access.
+    """
+    patterns = json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
+    embeddings = np.load(EMBEDDINGS_PATH)
+
+    client = chromadb.Client()
+    collection = client.create_collection(COLLECTION_NAME, metadata={"hnsw:space": "cosine"})
+
+    ids = [str(p["id"]) for p in patterns]
+    documents = [p.get("text_for_embedding", "") for p in patterns]
+    metadatas = [build_metadata(p) for p in patterns]
+    embedding_list = embeddings.tolist()
+
+    CHUNK = 500
+    for start in range(0, len(ids), CHUNK):
+        collection.add(
+            ids=ids[start : start + CHUNK],
+            documents=documents[start : start + CHUNK],
+            metadatas=metadatas[start : start + CHUNK],
+            embeddings=embedding_list[start : start + CHUNK],
+        )
+
+    print(f"Loaded {collection.count()} patterns into Chroma.")
+    return collection, patterns
+
 
 def search(
     query: str,
     collection: chromadb.Collection,
     openai_client: OpenAI,
+    patterns: list[dict],
     top_k: int = 5,
     craft: str | None = None,
     free_only: bool = False,
@@ -116,7 +116,7 @@ def search(
 ) -> list[dict]:
     """
     Embed query with OpenAI, query Chroma with optional metadata filters.
-    Returns list of metadata dicts for the top_k results.
+    Returns list of full pattern dicts for the top_k results.
     """
     query_embedding = (
         openai_client.embeddings.create(
@@ -138,34 +138,38 @@ def search(
 
     results = collection.query(**kwargs)
 
-    metadatas = results["metadatas"][0]
+    # 用 id 查完整 pattern 数据
+    id_to_pattern = {str(p["id"]): p for p in patterns}
+    result_ids = results["ids"][0]
     distances = results["distances"][0]
 
-    # Attach cosine similarity (Chroma cosine space returns distance = 1 - similarity)
-    for meta, dist in zip(metadatas, distances):
-        meta["_similarity"] = round(1 - dist, 4)
+    full_patterns = []
+    for pid, dist in zip(result_ids, distances):
+        pattern = id_to_pattern[pid].copy()
+        pattern["_similarity"] = round(1 - dist, 4)
+        full_patterns.append(pattern)
 
-    return metadatas
+    return full_patterns
 
 
 def main():
     openai_client = OpenAI()
-    collection = load_collection()
+    collection, patterns = load_collection()  # 解包 tuple
 
     query = input("\n搜索编织图解：").strip()
 
-    # 自动解析 query 里的过滤条件
     intent = parse_query(query, openai_client)
     print(f"\n📋 解析意图：")
     print(f"   语义搜索：{intent.semantic_query}")
     print(f"   工艺：{intent.craft or '不限'}")
     print(f"   只看免费：{'是' if intent.free_only else '否'}")
     print(f"   最低评分：{intent.min_rating or '不限'}")
-    
+
     results = search(
         query=intent.semantic_query,
         collection=collection,
         openai_client=openai_client,
+        patterns=patterns,
         top_k=5,
         craft=intent.craft,
         free_only=intent.free_only,
@@ -173,13 +177,14 @@ def main():
     )
 
     print(f"\n--- 搜索结果（共 {len(results)} 条）---\n")
-    for i, meta in enumerate(results, 1):
-        free_label = "免费" if meta["free"] else "付费"
-        print(f"{i}. {meta['name']}")
-        print(f"   {meta['craft']} · {meta['yarn_weight_description']} · {free_label}")
-        print(f"   分类：{meta['categories']}")
-        print(f"   评分：{meta['rating_average']:.1f}  相似度：{meta['_similarity']}")
-        print(f"   链接：https://www.ravelry.com/patterns/library/{meta['permalink']}")
+    for i, p in enumerate(results, 1):
+        free_label = "免费" if p.get("free") else "付费"
+        photo = (p.get("photos") or [{}])[0]
+        print(f"{i}. {p['name']}")
+        print(f"   {p.get('craft', {}).get('name', '')} · {p.get('yarn_weight_description', '')} · {free_label}")
+        print(f"   评分：{p.get('rating_average', 0):.1f}  相似度：{p['_similarity']}")
+        print(f"   图片：{photo.get('medium_url', '无')}")
+        print(f"   链接：https://www.ravelry.com/patterns/library/{p['permalink']}")
         print()
 
 if __name__ == "__main__":
