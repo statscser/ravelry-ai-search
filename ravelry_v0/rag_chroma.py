@@ -183,7 +183,7 @@ def main():
         print(f"{i}. {p['name']}")
         print(f"   {p.get('craft', {}).get('name', '')} · {p.get('yarn_weight_description', '')} · {free_label}")
         print(f"   评分：{p.get('rating_average', 0):.1f}  相似度：{p['_similarity']}")
-        print(f"   图片：{photo.get('medium_url', '无')}")
+        print(f"   图片：{photo.get('small_url', '无')}")
         print(f"   链接：https://www.ravelry.com/patterns/library/{p['permalink']}")
         print()
 

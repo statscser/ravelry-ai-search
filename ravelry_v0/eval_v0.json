@@ -1,0 +1,562 @@
+[
+  {
+    "query": "cozy winter sweater with cable knitting",
+    "intent": {
+      "semantic_query": "cozy winter sweater with cable knitting",
+      "craft": "Knitting",
+      "free_only": false,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Cozy Cubes",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.869565217391305,
+        "free": false,
+        "similarity": 0.6035,
+        "url": "https://www.ravelry.com/patterns/library/cozy-cubes"
+      },
+      {
+        "name": "Waiting for winter",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 0,
+        "free": false,
+        "similarity": 0.5954,
+        "url": "https://www.ravelry.com/patterns/library/waiting-for-winter-2"
+      },
+      {
+        "name": "Winters Pullover",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.851063829787234,
+        "free": false,
+        "similarity": 0.594,
+        "url": "https://www.ravelry.com/patterns/library/winters-pullover"
+      },
+      {
+        "name": "Hearthside Pullover",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.625,
+        "free": false,
+        "similarity": 0.5926,
+        "url": "https://www.ravelry.com/patterns/library/hearthside-pullover"
+      },
+      {
+        "name": "Three Season Cardigan",
+        "craft": "Knitting",
+        "yarn_weight": "Worsted (9 wpi)",
+        "rating": 4.813186813186813,
+        "free": false,
+        "similarity": 0.5921,
+        "url": "https://www.ravelry.com/patterns/library/three-season-cardigan"
+      }
+    ]
+  },
+  {
+    "query": "summer crochet top lightweight",
+    "intent": {
+      "semantic_query": "summer crochet top lightweight",
+      "craft": "Crochet",
+      "free_only": false,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Easy Summer Top",
+        "craft": "Crochet",
+        "yarn_weight": "Worsted (9 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.6372,
+        "url": "https://www.ravelry.com/patterns/library/easy-summer-top-5"
+      },
+      {
+        "name": "The Sweetpea Top",
+        "craft": "Crochet",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.622950819672131,
+        "free": true,
+        "similarity": 0.4911,
+        "url": "https://www.ravelry.com/patterns/library/the-sweetpea-top"
+      },
+      {
+        "name": "TROPEZ Sweater",
+        "craft": "Crochet",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.931034482758621,
+        "free": false,
+        "similarity": 0.4755,
+        "url": "https://www.ravelry.com/patterns/library/tropez-sweater"
+      },
+      {
+        "name": "Evening Mist Skirt",
+        "craft": "Crochet",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 0,
+        "free": false,
+        "similarity": 0.4726,
+        "url": "https://www.ravelry.com/patterns/library/evening-mist-skirt"
+      },
+      {
+        "name": "Lively Little Overall Dress",
+        "craft": "Crochet",
+        "yarn_weight": null,
+        "rating": 0,
+        "free": true,
+        "similarity": 0.4635,
+        "url": "https://www.ravelry.com/patterns/library/lively-little-overall-dress"
+      }
+    ]
+  },
+  {
+    "query": "colorwork yoke pullover",
+    "intent": {
+      "semantic_query": "colorwork yoke pullover",
+      "craft": null,
+      "free_only": false,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Yoke Meditation Series #3",
+        "craft": "Knitting",
+        "yarn_weight": "Sport (12 wpi)",
+        "rating": 5.0,
+        "free": false,
+        "similarity": 0.6081,
+        "url": "https://www.ravelry.com/patterns/library/yoke-meditation-series-3"
+      },
+      {
+        "name": "Hearthside Pullover",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.625,
+        "free": false,
+        "similarity": 0.589,
+        "url": "https://www.ravelry.com/patterns/library/hearthside-pullover"
+      },
+      {
+        "name": "Boswellia",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.5,
+        "free": true,
+        "similarity": 0.5742,
+        "url": "https://www.ravelry.com/patterns/library/boswellia"
+      },
+      {
+        "name": "owls",
+        "craft": "Knitting",
+        "yarn_weight": "Bulky (7 wpi)",
+        "rating": 4.55359565807327,
+        "free": false,
+        "similarity": 0.5708,
+        "url": "https://www.ravelry.com/patterns/library/owls-9"
+      },
+      {
+        "name": "Ariundle",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.962962962962963,
+        "free": false,
+        "similarity": 0.564,
+        "url": "https://www.ravelry.com/patterns/library/ariundle"
+      }
+    ]
+  },
+  {
+    "query": "crochet granny square cardigan",
+    "intent": {
+      "semantic_query": "crochet granny square cardigan",
+      "craft": null,
+      "free_only": false,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Stash Yarn Baby Cardigan",
+        "craft": "Crochet",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.5912,
+        "url": "https://www.ravelry.com/patterns/library/stash-yarn-baby-cardigan"
+      },
+      {
+        "name": "Good Grandpa Cardigan",
+        "craft": "Knitting",
+        "yarn_weight": "Bulky (7 wpi)",
+        "rating": 4.84375,
+        "free": false,
+        "similarity": 0.5815,
+        "url": "https://www.ravelry.com/patterns/library/good-grandpa-cardigan"
+      },
+      {
+        "name": "Step by Step Cardigan",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.872,
+        "free": false,
+        "similarity": 0.5742,
+        "url": "https://www.ravelry.com/patterns/library/step-by-step-cardigan"
+      },
+      {
+        "name": "Brookgreen Cardi",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.821428571428571,
+        "free": false,
+        "similarity": 0.5633,
+        "url": "https://www.ravelry.com/patterns/library/brookgreen-cardi"
+      },
+      {
+        "name": "Sea Glass Cardigan",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.409638554216867,
+        "free": false,
+        "similarity": 0.5591,
+        "url": "https://www.ravelry.com/patterns/library/sea-glass-cardigan-3"
+      }
+    ]
+  },
+  {
+    "query": "knitting lace shawl beginner friendly",
+    "intent": {
+      "semantic_query": "knitting lace shawl beginner friendly",
+      "craft": "Knitting",
+      "free_only": false,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Kuutar shawl",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.814814814814815,
+        "free": false,
+        "similarity": 0.6191,
+        "url": "https://www.ravelry.com/patterns/library/kuutar-shawl"
+      },
+      {
+        "name": "Gossamer",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.7407407407407405,
+        "free": false,
+        "similarity": 0.6164,
+        "url": "https://www.ravelry.com/patterns/library/gossamer-10"
+      },
+      {
+        "name": "Honey Glow Shawl",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.6134,
+        "url": "https://www.ravelry.com/patterns/library/honey-glow-shawl"
+      },
+      {
+        "name": "Simple Oblong Triangle Shawl",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.6109,
+        "url": "https://www.ravelry.com/patterns/library/simple-oblong-triangle-shawl"
+      },
+      {
+        "name": "Bella Shawl",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.741116751269035,
+        "free": true,
+        "similarity": 0.6104,
+        "url": "https://www.ravelry.com/patterns/library/bella-shawl-3"
+      }
+    ]
+  },
+  {
+    "query": "classic socks pattern rating above 4.5",
+    "intent": {
+      "semantic_query": "classic socks",
+      "craft": null,
+      "free_only": false,
+      "min_rating": 4.5
+    },
+    "results": [
+      {
+        "name": "The Slip Rib Socks",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.785714285714286,
+        "free": false,
+        "similarity": 0.5274,
+        "url": "https://www.ravelry.com/patterns/library/the-slip-rib-socks"
+      },
+      {
+        "name": "Little Boxes Socks",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.834862385321101,
+        "free": false,
+        "similarity": 0.5168,
+        "url": "https://www.ravelry.com/patterns/library/little-boxes-socks-2"
+      },
+      {
+        "name": "Thicksgiving Socks",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.812807881773399,
+        "free": false,
+        "similarity": 0.5009,
+        "url": "https://www.ravelry.com/patterns/library/thicksgiving-socks"
+      },
+      {
+        "name": "I'm So Basic Socks",
+        "craft": "Knitting",
+        "yarn_weight": "Light Fingering",
+        "rating": 4.857877813504823,
+        "free": true,
+        "similarity": 0.4907,
+        "url": "https://www.ravelry.com/patterns/library/im-so-basic-socks"
+      },
+      {
+        "name": "Fish Lips Kiss Heel",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.810909090909091,
+        "free": false,
+        "similarity": 0.4825,
+        "url": "https://www.ravelry.com/patterns/library/fish-lips-kiss-heel"
+      }
+    ]
+  },
+  {
+    "query": "oversized slouchy beanie rating above 4.8",
+    "intent": {
+      "semantic_query": "oversized slouchy beanie",
+      "craft": null,
+      "free_only": false,
+      "min_rating": 4.8
+    },
+    "results": [
+      {
+        "name": "Deep Winter Hat",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.932584269662922,
+        "free": false,
+        "similarity": 0.4161,
+        "url": "https://www.ravelry.com/patterns/library/deep-winter-hat-2"
+      },
+      {
+        "name": "Just a hat",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.8019323671497585,
+        "free": true,
+        "similarity": 0.3975,
+        "url": "https://www.ravelry.com/patterns/library/just-a-hat-4"
+      },
+      {
+        "name": "Wheat Field Hat",
+        "craft": "Knitting",
+        "yarn_weight": "Worsted (9 wpi)",
+        "rating": 5.0,
+        "free": true,
+        "similarity": 0.3662,
+        "url": "https://www.ravelry.com/patterns/library/wheat-field-hat-2"
+      },
+      {
+        "name": "Sweater No. 11",
+        "craft": "Knitting",
+        "yarn_weight": "Bulky (7 wpi)",
+        "rating": 4.816568047337278,
+        "free": false,
+        "similarity": 0.3628,
+        "url": "https://www.ravelry.com/patterns/library/sweater-no-11"
+      },
+      {
+        "name": "Musselburgh",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.881380046238663,
+        "free": false,
+        "similarity": 0.354,
+        "url": "https://www.ravelry.com/patterns/library/musselburgh"
+      }
+    ]
+  },
+  {
+    "query": "free easy crochet baby blanket",
+    "intent": {
+      "semantic_query": "easy crochet baby blanket",
+      "craft": "Crochet",
+      "free_only": true,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Nordic Baby Merino Blanket",
+        "craft": "Crochet",
+        "yarn_weight": "Sport (12 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.6651,
+        "url": "https://www.ravelry.com/patterns/library/nordic-baby-merino-blanket"
+      },
+      {
+        "name": "Stash Yarn Baby Cardigan",
+        "craft": "Crochet",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.5861,
+        "url": "https://www.ravelry.com/patterns/library/stash-yarn-baby-cardigan"
+      },
+      {
+        "name": "Badtz-Maru PixelParty",
+        "craft": "Crochet",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.498,
+        "url": "https://www.ravelry.com/patterns/library/badtz-maru-pixelparty"
+      },
+      {
+        "name": "Easy Summer Top",
+        "craft": "Crochet",
+        "yarn_weight": "Worsted (9 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.4958,
+        "url": "https://www.ravelry.com/patterns/library/easy-summer-top-5"
+      },
+      {
+        "name": "Mosaic Summer Seahorse",
+        "craft": "Crochet",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.4947,
+        "url": "https://www.ravelry.com/patterns/library/mosaic-summer-seahorse"
+      }
+    ]
+  },
+  {
+    "query": "free knitting fingerless gloves pattern",
+    "intent": {
+      "semantic_query": "fingerless gloves",
+      "craft": "Knitting",
+      "free_only": true,
+      "min_rating": 0.0
+    },
+    "results": [
+      {
+        "name": "Mitaines Love in stitches",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.4294,
+        "url": "https://www.ravelry.com/patterns/library/mitaines-love-in-stitches"
+      },
+      {
+        "name": "Winter Mittens",
+        "craft": "Knitting",
+        "yarn_weight": "Bulky (7 wpi)",
+        "rating": 0,
+        "free": true,
+        "similarity": 0.3892,
+        "url": "https://www.ravelry.com/patterns/library/winter-mittens-12"
+      },
+      {
+        "name": "Hands",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.380952380952381,
+        "free": true,
+        "similarity": 0.3745,
+        "url": "https://www.ravelry.com/patterns/library/hands"
+      },
+      {
+        "name": "Susie Rogers' Reading Mitts",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.639903653151345,
+        "free": true,
+        "similarity": 0.3729,
+        "url": "https://www.ravelry.com/patterns/library/susie-rogers-reading-mitts"
+      },
+      {
+        "name": "240-7 Dazzling Diamonds Vest",
+        "craft": "Knitting",
+        "yarn_weight": "DK (11 wpi)",
+        "rating": 4.333333333333333,
+        "free": true,
+        "similarity": 0.328,
+        "url": "https://www.ravelry.com/patterns/library/240-7-dazzling-diamonds-vest"
+      }
+    ]
+  },
+  {
+    "query": "free knitting cardigan rating above 4.5",
+    "intent": {
+      "semantic_query": "knitting cardigan",
+      "craft": "Knitting",
+      "free_only": true,
+      "min_rating": 4.5
+    },
+    "results": [
+      {
+        "name": "loupy stripe cardi",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.783783783783784,
+        "free": true,
+        "similarity": 0.5955,
+        "url": "https://www.ravelry.com/patterns/library/loupy-stripe-cardi"
+      },
+      {
+        "name": "Pivoine",
+        "craft": "Knitting",
+        "yarn_weight": "Sport (12 wpi)",
+        "rating": 4.842105263157895,
+        "free": true,
+        "similarity": 0.5831,
+        "url": "https://www.ravelry.com/patterns/library/pivoine-6"
+      },
+      {
+        "name": "Step by Step Sweater",
+        "craft": "Knitting",
+        "yarn_weight": "Aran (8 wpi)",
+        "rating": 4.863700707785642,
+        "free": true,
+        "similarity": 0.5723,
+        "url": "https://www.ravelry.com/patterns/library/step-by-step-sweater"
+      },
+      {
+        "name": "Aster",
+        "craft": "Knitting",
+        "yarn_weight": "Fingering (14 wpi)",
+        "rating": 4.521739130434782,
+        "free": true,
+        "similarity": 0.5656,
+        "url": "https://www.ravelry.com/patterns/library/aster-19"
+      },
+      {
+        "name": "Palmire",
+        "craft": "Knitting",
+        "yarn_weight": "Sport (12 wpi)",
+        "rating": 4.6875,
+        "free": true,
+        "similarity": 0.5628,
+        "url": "https://www.ravelry.com/patterns/library/palmire"
+      }
+    ]
+  }
+]
