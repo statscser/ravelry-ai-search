@@ -25,8 +25,44 @@ def _safe(value, default=""):
 class PatternSearchIntent(BaseModel):
     semantic_query: str
     craft: Optional[Literal["Knitting", "Crochet"]] = None
+    yarn_weight: Optional[str] = None
+    needle_size_min: Optional[float] = None
+    needle_size_max: Optional[float] = None
     free_only: bool = False
     min_rating: float = 0.0
+    exclude_fibers: list[str] = []
+    include_fibers: list[str] = []
+    categories: Optional[str] = None
+
+SYSTEM_PROMPT = """
+You are a knitting pattern search assistant. Parse the user's query into structured search intent.
+
+Rules:
+- semantic_query: style and aesthetic description. 
+  IMPORTANT: if include_fibers is detected, append those fiber names to semantic_query 
+  (e.g. "mohair cardigan" → semantic_query="cardigan mohair", include_fibers=["mohair"])
+  Keep words like "lightweight", "oversized", "cozy", "chunky", "colorful".
+  Remove needle size and yarn weight specs since those go in dedicated fields.
+  Do NOT include excluded fibers in semantic_query.
+
+- include_fibers: fibers the user WANTS. Also append these to semantic_query.
+- exclude_fibers: fibers the user does NOT want (look for "no", "not", "without", 
+  "avoid", "不用", "不要"). Do NOT add these to semantic_query.
+- needle_size_min / needle_size_max: extract mm values
+- yarn_weight: normalize to: Lace, Fingering, Sport, DK, Worsted, Bulky, Super Bulky
+- craft: "crochet"/"hook"/"钩针" → Crochet, "knit"/"needle"/"棒针" → Knitting
+- categories: Hat, Sweater, Cardigan, Sock, Shawl, Blanket, Mittens, Cowl, Top, Vest
+
+Examples:
+- "mohair cardigan needles > 5mm" 
+  → semantic_query="cardigan mohair", include_fibers=["mohair"], needle_size_min=5.0
+- "粗线粗针但轻盈不用马海毛的毛衣" 
+  → semantic_query="lightweight chunky sweater", exclude_fibers=["mohair","马海毛"], yarn_weight="Bulky"
+- "cotton linen summer top" 
+  → semantic_query="summer top cotton linen", include_fibers=["cotton","linen"]
+- "no mohair cozy sweater" 
+  → semantic_query="cozy sweater", exclude_fibers=["mohair"]
+"""
 
 def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
     instructor_client = instructor.from_openai(client)
@@ -34,18 +70,27 @@ def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
         model="gpt-4o-mini",
         max_tokens=500,
         response_model=PatternSearchIntent,
-        messages=[{"role": "user", "content": query}]
+        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                  {"role": "user", "content": query}]
     )
 
 def build_metadata(pattern: dict) -> dict:
     """Extract filterable metadata fields from a pattern dict."""
+    yarn_weight_name = (pattern.get("yarn_weight") or {}).get("name", "")
+    needle_sizes_metric = [
+        n["metric"] for n in (pattern.get("pattern_needle_sizes") or [])
+        if n.get("metric")
+    ]
     return {
         "name": _safe(pattern.get("name")),
         "craft": _safe(pattern.get("craft", {}) or {}).get("name", "") if pattern.get("craft") else "",
         "yarn_weight_description": _safe(pattern.get("yarn_weight_description")),
+        "yarn_weight_name": yarn_weight_name,
         "needle_sizes": ", ".join(
             n["name"] for n in (pattern.get("pattern_needle_sizes") or [])
         ),
+        "needle_size_min": min(needle_sizes_metric) if needle_sizes_metric else 0.0,
+        "needle_size_max": max(needle_sizes_metric) if needle_sizes_metric else 0.0,
         "categories": ", ".join(
             c["name"] for c in (pattern.get("pattern_categories") or [])
         ),
@@ -57,18 +102,22 @@ def build_metadata(pattern: dict) -> dict:
         "permalink": _safe(pattern.get("permalink")),
     }
 
-def _build_where(
-    craft: str | None,
-    free_only: bool,
-    min_rating: float,
-) -> dict | None:
+def _build_where(intent: PatternSearchIntent) -> dict | None:
+    if intent is None:
+        return None
     conditions = []
-    if craft:
-        conditions.append({"craft": {"$eq": craft}})
-    if free_only:
+    if intent.craft:
+        conditions.append({"craft": {"$eq": intent.craft}})
+    if intent.free_only:
         conditions.append({"free": {"$eq": 1}})
-    if min_rating > 0:
-        conditions.append({"rating_average": {"$gte": min_rating}})
+    if intent.min_rating > 0:
+        conditions.append({"rating_average": {"$gte": intent.min_rating}})
+    if intent.yarn_weight:
+        conditions.append({"yarn_weight_name": {"$eq": intent.yarn_weight.title()}})
+    if intent.needle_size_min:
+        conditions.append({"needle_size_max": {"$gte": intent.needle_size_min}})
+    if intent.needle_size_max:
+        conditions.append({"needle_size_min": {"$lte": intent.needle_size_max}})
 
     if not conditions:
         return None
@@ -110,9 +159,7 @@ def search(
     openai_client: OpenAI,
     patterns: list[dict],
     top_k: int = 5,
-    craft: str | None = None,
-    free_only: bool = False,
-    min_rating: float = 0.0,
+    intent: PatternSearchIntent = None,
 ) -> list[dict]:
     """
     Embed query with OpenAI, query Chroma with optional metadata filters.
@@ -127,7 +174,7 @@ def search(
         .embedding
     )
 
-    where = _build_where(craft, free_only, min_rating)
+    where = _build_where(intent)
     kwargs = dict(
         query_embeddings=[query_embedding],
         n_results=top_k,
@@ -171,9 +218,7 @@ def main():
         openai_client=openai_client,
         patterns=patterns,
         top_k=5,
-        craft=intent.craft,
-        free_only=intent.free_only,
-        min_rating=intent.min_rating,
+        intent=intent,
     )
 
     print(f"\n--- 搜索结果（共 {len(results)} 条）---\n")

@@ -1,3 +1,16 @@
+NOISE_ATTRIBUTES = {
+    "written-pattern", "chart", "schematic", "phototutorial",
+    "video-tutorial", "captioned-video", "pattern-recipe",
+    "machine-instructions", "low-vision", "screen-reader",
+    "color-blind-accessible", "buttonholes", "icord",
+    "icord-edging", "three-needle-bind", "provisional",
+    "selvedge", "steeks", "duplicate-stitch", "surface-crochet",
+    "corrugated-ribbing", "crocheted-edging", "lace-edging",
+    "other-edging", "other-heel", "other-toe", "wide-toe",
+    "star-toe", "dutch-heel", "short-row-toe", "seamed-sock",
+    "afterthought-pocket",
+}
+
 def clean_notes(notes: str) -> str:
     # 只保留英文部分，去掉西班牙语
     # 大多数双语图解都是英文在前，用 ___ 或 ESPAÑOL 分隔
@@ -7,6 +20,7 @@ def clean_notes(notes: str) -> str:
         notes = notes[:notes.index("---")]
     return notes.strip()
 
+
 def build_text_for_embedding(pattern: dict) -> str:
     """
     把 pattern 的关键信息拼成一段文字，用于生成 embedding。
@@ -14,13 +28,19 @@ def build_text_for_embedding(pattern: dict) -> str:
     """
     parts = []
     if pattern.get("name"):
-        parts.append(f"Name{pattern['name']}")
+        parts.append(f"Name: {pattern['name']}")
     if pattern.get("craft"):
         parts.append(f"Craft: {pattern['craft']['name']}")
     if pattern.get("yarn_weight_description"):
         parts.append(f"Yarn weight: {pattern['yarn_weight_description']}")
-    # if pattern.get("yarn_weight"):
-    #     parts.append(f"yarn_weight: {'; '.join(f'{k}: {v}' for k, v in pattern['yarn_weight'].items() if v)}")
+    if pattern.get("packs"):
+        yarn_names = list({
+            pack["yarn_name"]
+            for pack in pattern["packs"]
+            if pack.get("yarn_name")
+        })
+        if yarn_names:
+            parts.append(f"Suggested yarns: {', '.join(yarn_names)}")
     if pattern.get("pattern_needle_sizes"):
         needle_names = [n["name"] for n in pattern["pattern_needle_sizes"]]
         parts.append(f"Needle sizes: {', '.join(needle_names)}")
@@ -30,7 +50,13 @@ def build_text_for_embedding(pattern: dict) -> str:
         en_notes = clean_notes(pattern["notes"])
         parts.append(f"Description: {en_notes}")
     if pattern.get("pattern_attributes"):
-        parts.append(f"Attributes: {', '.join(a['permalink'] for a in pattern['pattern_attributes'])}")
+        useful_attrs = [
+            a["permalink"] for a in pattern["pattern_attributes"]
+            if a["permalink"] not in NOISE_ATTRIBUTES
+        ]
+        if useful_attrs:
+            parts.append(f"Attributes: {', '.join(useful_attrs)}")
+
     # TODO Week 5：从 packs 字段提取 fiber 信息加入 embedding
     # pattern['packs'][0]['yarn_weight']['name'] 有线重信息
 

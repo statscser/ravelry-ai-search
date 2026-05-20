@@ -29,7 +29,7 @@ with st.form("search_form"):
             label_visibility="collapsed",
         )
     with col_btn:
-        search_clicked = st.form_submit_button("Search", width='stretch', type="primary")
+        search_clicked = st.form_submit_button("Search", width="stretch", type="primary")
 
 # --- search & display --------------------------------------------------------
 if search_clicked and query.strip():
@@ -42,10 +42,22 @@ if search_clicked and query.strip():
     filters = []
     if intent.craft:
         filters.append(intent.craft)
+    if intent.yarn_weight:
+        filters.append(f"yarn: {intent.yarn_weight}")
+    if intent.needle_size_min:
+        filters.append(f"needle ≥ {intent.needle_size_min}mm")
+    if intent.needle_size_max:
+        filters.append(f"needle ≤ {intent.needle_size_max}mm")
     if intent.free_only:
         filters.append("free only")
     if intent.min_rating > 0:
         filters.append(f"rating ≥ {intent.min_rating}")
+    if intent.exclude_fibers:
+        filters.append(f"exclude: {', '.join(intent.exclude_fibers)}")
+    if intent.include_fibers:
+        filters.append(f"include: {', '.join(intent.include_fibers)}")
+    if intent.categories:
+        filters.append(f"category: {intent.categories}")
     filter_str = " · ".join(filters) if filters else "no filters"
     st.caption(f"LLM understanding：「{intent.semantic_query}」 — {filter_str}")
 
@@ -56,9 +68,7 @@ if search_clicked and query.strip():
             openai_client=client,
             patterns=st.session_state.patterns,
             top_k=8,
-            craft=intent.craft,
-            free_only=intent.free_only,
-            min_rating=intent.min_rating,
+            intent=intent,
         )
 
     if not results:
@@ -74,12 +84,13 @@ if search_clicked and query.strip():
                     img_url = photos[0].get("small_url") if photos else None
                     if img_url:
                         st.markdown(
-                            f'<img src="{img_url}" style="width:100%;height:300px;object-fit:cover;border-radius:8px">',
+                            f'<img src="{img_url}" style="width:100%;height:300px;'
+                            f'object-fit:cover;border-radius:8px">',
                             unsafe_allow_html=True,
                         )
                     else:
                         st.markdown(
-                            "<div style='height:160px;background:#f0f0f0;border-radius:8px;"
+                            "<div style='height:300px;background:#f0f0f0;border-radius:8px;"
                             "display:flex;align-items:center;justify-content:center;"
                             "color:#aaa;font-size:2rem'>🧶</div>",
                             unsafe_allow_html=True,
@@ -109,7 +120,6 @@ if search_clicked and query.strip():
                             unsafe_allow_html=True,
                         )
                     else:
-                        price = pattern.get("price") or ""
                         currency = pattern.get("currency_symbol") or ""
                         price = pattern.get("price") or ""
                         label = f"Paid {currency}{price}".strip()
