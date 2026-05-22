@@ -1,8 +1,12 @@
+from pathlib import Path
+
+import numpy as np
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from rag_chroma import load_collection, parse_query, search
+from hybrid_search import reranked_search
+from rag_chroma import load_collection, parse_query
 
 load_dotenv()
 
@@ -18,6 +22,11 @@ if "collection" not in st.session_state:
         collection, patterns = load_collection()
         st.session_state.collection = collection
         st.session_state.patterns = patterns
+
+if "embeddings" not in st.session_state:
+    st.session_state.embeddings = np.load(
+        Path(__file__).parent / "data" / "embeddings.npy"
+    )
 
 # --- search bar --------------------------------------------------------------
 with st.form("search_form"):
@@ -62,16 +71,17 @@ if search_clicked and query.strip():
     st.caption(f"LLM understanding：「{intent.semantic_query}」 — {filter_str}")
 
     with st.spinner("Searching…"):
-        results = search(
+        results = reranked_search(
             query=intent.semantic_query,
-            collection=st.session_state.collection,
-            openai_client=client,
             patterns=st.session_state.patterns,
-            top_k=8,
+            embeddings=st.session_state.embeddings,
+            openai_client=client,
+            top_k=20,
             intent=intent,
         )
 
-    if not results:
+    results = [p for p in results if p.get("_cohere_score", 0) >= 0.3]
+    if not results or len(results) == 0:
         st.warning("No results found. Try relaxing your filters.")
     else:
         COLS = 4
