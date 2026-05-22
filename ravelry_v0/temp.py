@@ -1,9 +1,14 @@
-from rag_chroma import PatternSearchIntent, _build_where
+from rag_chroma import load_collection
 
-intent = PatternSearchIntent(
-    semantic_query="cardigan",
-    yarn_weight="DK",
-    min_rating=4.5,
+collection, patterns = load_collection()
+
+# 直接用 where filter 查
+results = collection.query(
+    query_embeddings=[[0.0] * 1536],  # 随便一个向量
+    n_results=5,
+    where={"categories": {"$contains": "Cowl"}},
+    include=["metadatas"],
 )
-where = _build_where(intent)
-print(where)
+print(f"Results: {len(results['ids'][0])}")
+for m in results["metadatas"][0]:
+    print(f"  {m['categories']}")

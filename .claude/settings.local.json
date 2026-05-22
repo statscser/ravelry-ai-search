@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(python -c \"import json; p=json.load\\(open\\('data/patterns.json',encoding='utf-8'\\)\\)[0]; print\\(list\\(p.keys\\(\\)\\)\\)\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(.venv\\\\Scripts\\\\python.exe -c \"import rank_bm25; print\\('ok'\\)\")",
+      "PowerShell(& .\\\\.venv\\\\Scripts\\\\python.exe -c \"import rank_bm25; print\\('ok'\\)\" 2>&1)",
+      "PowerShell(& .\\\\.venv\\\\Scripts\\\\pip.exe install rank-bm25 2>&1)"
     ]
   }
 }

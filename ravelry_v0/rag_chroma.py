@@ -118,7 +118,7 @@ def _build_where(intent: PatternSearchIntent) -> dict | None:
         conditions.append({"needle_size_max": {"$gte": intent.needle_size_min}})
     if intent.needle_size_max:
         conditions.append({"needle_size_min": {"$lte": intent.needle_size_max}})
-
+        
     if not conditions:
         return None
     if len(conditions) == 1:

@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from rag_chroma import load_collection, parse_query, search
+from hybrid_search import hybrid_search
+import numpy as np
 
 load_dotenv()
 
@@ -58,6 +60,8 @@ def evaluate(version: str = "v0") -> None:
         return
     print(f"Loaded {len(golden)} annotated queries.\n")
 
+    embeddings = np.load(Path(__file__).parent / "data" / "embeddings.npy")
+
     openai_client = OpenAI()
     collection, patterns = load_collection()
 
@@ -69,11 +73,23 @@ def evaluate(version: str = "v0") -> None:
         gt_count   = len(relevant)
 
         intent  = parse_query(query, openai_client)
-        results = search(
+
+        # ### Chroma vector search
+        # results = search(
+        #     query=intent.semantic_query,
+        #     collection=collection,
+        #     openai_client=openai_client,
+        #     patterns=patterns,
+        #     top_k=TOP_K,
+        #     intent=intent,
+        # )
+
+        ### Hybrid search
+        results = hybrid_search(
             query=intent.semantic_query,
-            collection=collection,
-            openai_client=openai_client,
             patterns=patterns,
+            embeddings=embeddings,
+            openai_client=openai_client,
             top_k=TOP_K,
             intent=intent,
         )
@@ -99,7 +115,7 @@ def evaluate(version: str = "v0") -> None:
     # 在 for loop 结束后，打印前加这行
     print(f"rows count: {len(rows)}")
     print(f"first row: {rows[0] if rows else 'EMPTY'}")
-    
+
     # ── Print table ────────────────────────────────────────────────────────────
     W = 78
     print("\n" + "=" * W)
