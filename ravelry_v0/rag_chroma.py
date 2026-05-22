@@ -85,7 +85,7 @@ def build_metadata(pattern: dict) -> dict:
         "name": _safe(pattern.get("name")),
         "craft": _safe(pattern.get("craft", {}) or {}).get("name", "") if pattern.get("craft") else "",
         "yarn_weight_description": _safe(pattern.get("yarn_weight_description")),
-        "yarn_weight_name": yarn_weight_name,
+        "yarn_weight_name": yarn_weight_name.lower(),
         "needle_sizes": ", ".join(
             n["name"] for n in (pattern.get("pattern_needle_sizes") or [])
         ),
@@ -113,7 +113,7 @@ def _build_where(intent: PatternSearchIntent) -> dict | None:
     if intent.min_rating > 0:
         conditions.append({"rating_average": {"$gte": intent.min_rating}})
     if intent.yarn_weight:
-        conditions.append({"yarn_weight_name": {"$eq": intent.yarn_weight.title()}})
+        conditions.append({"yarn_weight_name": {"$eq": intent.yarn_weight.lower()}})
     if intent.needle_size_min:
         conditions.append({"needle_size_max": {"$gte": intent.needle_size_min}})
     if intent.needle_size_max:
