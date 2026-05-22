@@ -5,6 +5,7 @@ Usage: python eval.py [--version v0]
 
 import argparse
 import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from rag_chroma import load_collection, parse_query, search
-from hybrid_search import hybrid_search
+from hybrid_search import hybrid_search, reranked_search
 import numpy as np
 
 load_dotenv()
@@ -84,8 +85,18 @@ def evaluate(version: str = "v0") -> None:
         #     intent=intent,
         # )
 
-        ### Hybrid search
-        results = hybrid_search(
+        # ### Hybrid search
+        # results = hybrid_search(
+        #     query=intent.semantic_query,
+        #     patterns=patterns,
+        #     embeddings=embeddings,
+        #     openai_client=openai_client,
+        #     top_k=TOP_K,
+        #     intent=intent,
+        # )
+
+        ### Cohere reranked search
+        results = reranked_search(
             query=intent.semantic_query,
             patterns=patterns,
             embeddings=embeddings,
@@ -93,6 +104,7 @@ def evaluate(version: str = "v0") -> None:
             top_k=TOP_K,
             intent=intent,
         )
+        time.sleep(7)   # 10 calls/min = 6s间隔，7s保守一点
 
         result_ids = [int(p["id"]) for p in results]
 
@@ -111,10 +123,6 @@ def evaluate(version: str = "v0") -> None:
 
         r10_str = f"{r10:.4f}" if r10 is not None else "  N/A"
         print(f"  {query[:42]:<42}  GT={gt_count:>3}  MRR={mrr:.4f}  P@10={p10:.4f}  R@10={r10_str}")
-
-    # 在 for loop 结束后，打印前加这行
-    print(f"rows count: {len(rows)}")
-    print(f"first row: {rows[0] if rows else 'EMPTY'}")
 
     # ── Print table ────────────────────────────────────────────────────────────
     W = 78

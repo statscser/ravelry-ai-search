@@ -4,8 +4,10 @@ Usage: python hybrid_search.py
 """
 
 import json
+import time
 from pathlib import Path
 
+import cohere
 import numpy as np
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -135,6 +137,62 @@ def hybrid_search(
     return results
 
 
+# ── Cohere rerank ─────────────────────────────────────────────────────────────
+
+def reranked_search(
+    query: str,
+    patterns: list[dict],
+    embeddings: np.ndarray,
+    openai_client: OpenAI,
+    top_k: int = 10,
+    intent: PatternSearchIntent = None,
+) -> list[dict]:
+    """
+    Retrieve top-20 candidates via hybrid_search, then rerank with
+    Cohere rerank-multilingual-v3.0. COHERE_API_KEY must be in .env.
+    Returns top_k results augmented with _cohere_score (and hybrid fields).
+    """
+    candidates = hybrid_search(
+        query=query,
+        patterns=patterns,
+        embeddings=embeddings,
+        openai_client=openai_client,
+        top_k=20,
+        intent=intent,
+    )
+    if not candidates:
+        return []
+
+    co = cohere.ClientV2()   # reads COHERE_API_KEY from env
+    documents = [p.get("text_for_embedding") or "" for p in candidates]
+
+    # retry with backoff for rate limit
+    for attempt in range(3):
+        try:
+            response = co.rerank(
+                model="rerank-multilingual-v3.0",
+                query=query,
+                documents=documents,
+                top_n=top_k,
+            )
+            break
+        except Exception as e:
+            if "429" in str(e) and attempt < 2:
+                wait = 10 * (attempt + 1)
+                print(f"  Rate limited, waiting {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+
+    results = []
+    for hit in response.results:
+        p = candidates[hit.index].copy()
+        p["_cohere_score"] = round(hit.relevance_score, 6)
+        results.append(p)
+
+    return results
+
+
 # ── Demo ───────────────────────────────────────────────────────────────────────
 
 def main():
@@ -155,7 +213,8 @@ def main():
             f"free={intent.free_only}"
         )
 
-        results = hybrid_search(
+        # ── hybrid
+        hybrid = hybrid_search(
             query=intent.semantic_query,
             patterns=patterns,
             embeddings=embeddings,
@@ -163,15 +222,32 @@ def main():
             top_k=5,
             intent=intent,
         )
-
-        print(f"Top {len(results)} results:")
-        for i, p in enumerate(results, 1):
+        print(f"\n  [hybrid top 5]")
+        for i, p in enumerate(hybrid, 1):
             print(
                 f"  {i}. {p['name']:<46}"
                 f"  RRF={p['_rrf_score']:.5f}"
                 f"  BM25={p['_bm25_rank']:>4}"
                 f"  vec={p['_vec_rank']:>4}"
                 f"  sim={p['_vec_sim']:.4f}"
+            )
+
+        # ── reranked
+        reranked = reranked_search(
+            query=intent.semantic_query,
+            patterns=patterns,
+            embeddings=embeddings,
+            openai_client=client,
+            top_k=5,
+            intent=intent,
+        )
+        print(f"\n  [reranked top 5]")
+        for i, p in enumerate(reranked, 1):
+            print(
+                f"  {i}. {p['name']:<46}"
+                f"  cohere={p['_cohere_score']:.5f}"
+                f"  BM25={p['_bm25_rank']:>4}"
+                f"  vec={p['_vec_rank']:>4}"
             )
 
 
