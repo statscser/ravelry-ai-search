@@ -204,8 +204,19 @@ if "search_results" in st.session_state:
                         unsafe_allow_html=True,
                     )
 
-                # Name
-                st.markdown(f"**{pattern['name']}**")
+                # Name + designer
+                author    = pattern.get("pattern_author") or {}
+                author_name = author.get("name", "")
+                author_slug = author.get("permalink", "")
+                if author_name and author_slug:
+                    designer_md = (
+                        f" <span style='font-weight:normal;font-size:0.85em;color:#666'>"
+                        f"by [**{author_name}**](https://www.ravelry.com/designers/{author_slug})"
+                        f"</span>"
+                    )
+                else:
+                    designer_md = ""
+                st.markdown(f"**{pattern['name']}**{designer_md}", unsafe_allow_html=True)
 
                 # Craft · yarn weight
                 craft_name = (pattern.get("craft") or {}).get("name", "")
