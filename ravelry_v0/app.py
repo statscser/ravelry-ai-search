@@ -190,11 +190,15 @@ if "search_results" in st.session_state:
                 yarn       = pattern.get("yarn_weight_description") or ""
                 st.markdown(f"{craft_name} · {yarn}" if yarn else craft_name)
 
-                # Rating
-                rating = pattern.get("rating_average") or 0.0
-                count  = pattern.get("rating_count") or 0
+                # Rating + favorites
+                rating    = pattern.get("rating_average") or 0.0
+                count     = pattern.get("rating_count") or 0
+                favorites = pattern.get("favorites_count") or 0
+                rating_str = f"⭐ {rating:.1f} ({count})" if rating > 0 else "No ratings"
                 st.markdown(
-                    f"⭐ {rating:.1f} ({count} ratings)" if rating > 0 else "No ratings yet"
+                    f"{rating_str} &nbsp;"
+                    f"<span style='color:#e05a5a'>♥</span> {favorites:,}",
+                    unsafe_allow_html=True,
                 )
 
                 # Recommendation — shown whenever this pattern has one,
