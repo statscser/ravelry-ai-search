@@ -23,19 +23,27 @@ MAX_RETRIES = 3
 
 # 按 category 采集，每个 category 目标数量
 CATEGORIES = [
-    ("sweater",       500),
-    ("cardigan",      500),
-    ("hat",           400),
-    ("socks",         400),
-    ("shawl",         300),
-    ("blanket",       300),
-    ("baby",          300),
-    ("mittens gloves",200),
-    ("cowl",          200),
-    ("top tank",      300),
-    ("scarf",         200),
-    ("vest",          200),
+    # 上衣类（最大品类，占大头）
+    ("sweater pullover",     1200),  # 现有 ~486，补到 1200
+    ("cardigan",             1200),  # 现有 591，补到 1200
+    ("vest sleeveless top",   800),  # 现有 ~512，补到 800
+    ("top tank tee",          500),  # 现有 ~310，补到 500
+    ("coat jacket",           200),  # 现有 25，大幅补充
+
+    # 配件类
+    ("hat beanie",            700),  # 现有 ~332，补到 700
+    ("shawl wrap",            600),  # 现有 265，补到 600
+    ("cowl scarf",            500),  # 现有 ~437，补到 500
+    ("mittens gloves",        400),  # 现有 ~305，补到 400
+    ("socks",                 800),  # 现有 ~396，补到 800
+
+    # 家居/婴儿
+    ("blanket throw",         600),  # 现有 ~415，补到 600
+    ("baby knitting",         500),  # 现有 ~300，补到 500
 ]
+# 总目标：8000 条
+# 清洗后（去掉无 notes 约 10%）：约 7200 条
+# 加上重复率约 10%：实际约 6500-7000 条唯一 pattern
 
 def get_with_retry(url: str, params: dict = None) -> dict:
     for attempt in range(MAX_RETRIES):
@@ -98,6 +106,13 @@ def fetch_category(query: str, target_count: int, seen_ids: set) -> list[dict]:
         for detail in details:
             if len(collected) >= target_count:
                 break
+
+            # 清洗掉低质量数据
+            if not detail.get("notes"):
+                continue
+            if not detail.get("photos"):
+                continue
+
             detail["text_for_embedding"] = build_text_for_embedding(detail)
             collected.append(detail)
             seen_ids.add(detail["id"])
