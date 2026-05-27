@@ -12,3 +12,8 @@ wheels/
 
 # Scratch / temp files
 ravelry_v0/temp.py
+
+# Large generated data files — regenerate locally (see README)
+ravelry_v0/data/patterns.json
+ravelry_v0/data/embeddings.npy
+ravelry_v0/data/eval_results_*.json
