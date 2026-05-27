@@ -61,14 +61,19 @@ if "embeddings" not in st.session_state:
         Path(__file__).parent / "data" / "embeddings.npy"
     )
 
+if "search_history" not in st.session_state:
+    st.session_state.search_history = []
+
 
 # ── Search bar ────────────────────────────────────────────────────────────────
 
 with st.form("search_form"):
     col_input, col_btn = st.columns([6, 1])
     with col_input:
+        default_query = st.session_state.pop("prefill_query", "")
         query = st.text_input(
             label="query",
+            value=default_query,
             placeholder='e.g. "free beginner knitting hat with bulky yarn, rating above 4"',
             label_visibility="collapsed",
         )
@@ -127,6 +132,12 @@ if search_clicked and query.strip():
                 _client=client,
             )
 
+    # Update search history — deduplicated, max 10
+    history = st.session_state.search_history
+    if query not in history:
+        history.insert(0, query)
+    st.session_state.search_history = history[:10]
+
     # Persist to session state — display phase reads from here
     st.session_state.search_results = results
     st.session_state.search_rec_map = rec_map
@@ -134,6 +145,17 @@ if search_clicked and query.strip():
         f"LLM understanding：「{intent.semantic_query}」 — "
         + (" · ".join(filters) if filters else "no filters")
     )
+
+
+# ── Sidebar (always rendered; after search phase so history is current) ──────
+
+with st.sidebar:
+    if st.session_state.get("search_history"):
+        st.markdown("### 🕐 Recent Searches")
+        for past_query in st.session_state.search_history:
+            if st.button(past_query, key=f"hist_{past_query}", use_container_width=True):
+                st.session_state["prefill_query"] = past_query
+                st.rerun()
 
 
 # ── Display phase (runs on every re-run, including sort radio clicks) ─────────
