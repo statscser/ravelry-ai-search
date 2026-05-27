@@ -70,7 +70,7 @@ if "search_history" not in st.session_state:
 with st.form("search_form"):
     col_input, col_btn = st.columns([6, 1])
     with col_input:
-        default_query = st.session_state.pop("prefill_query", "")
+        default_query = st.session_state.get("prefill_query", "")
         query = st.text_input(
             label="query",
             value=default_query,
@@ -84,6 +84,7 @@ with st.form("search_form"):
 # ── Search phase (runs only on form submit) ───────────────────────────────────
 
 if search_clicked and query.strip():
+    st.session_state.pop("prefill_query", None)  # clear prefill now that it's been submitted
     client = st.session_state.openai_client
 
     with st.spinner("Thinking…"):
@@ -117,15 +118,14 @@ if search_clicked and query.strip():
     filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
     results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
 
-    # Sort by whatever the user had selected before this new search
+    # Generate recommendations for top-3 of the currently-selected sort order.
+    # Sort a temporary copy — session_state always stores Cohere order so that
+    # switching sorts in the display phase always works from the original ranking.
     sort_option = st.session_state.get("sort_option", "Relevance")
-    results = _sort_results(results, sort_option)
-
-    # Generate recommendations for top-3 of the sorted results
     rec_map: dict[int, str] = {}
     if results:
         with st.spinner("Generating recommendations…"):
-            top3_ids = tuple(p["id"] for p in results[:3])
+            top3_ids = tuple(p["id"] for p in _sort_results(results, sort_option)[:3])
             rec_map  = cached_recommendations(
                 query, top3_ids,
                 _patterns=st.session_state.patterns,
