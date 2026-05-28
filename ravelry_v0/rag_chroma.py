@@ -133,6 +133,8 @@ def load_collection() -> tuple[chromadb.Collection, list[dict]]:
     embeddings = np.load(EMBEDDINGS_PATH)
 
     client = chromadb.Client()
+    if COLLECTION_NAME in {c.name for c in client.list_collections()}:
+        client.delete_collection(COLLECTION_NAME)
     collection = client.create_collection(COLLECTION_NAME, metadata={"hnsw:space": "cosine"})
 
     ids = [str(p["id"]) for p in patterns]

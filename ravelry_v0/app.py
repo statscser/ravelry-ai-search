@@ -45,21 +45,21 @@ def _sort_results(results: list[dict], sort_option: str) -> list[dict]:
     return results  # "Relevance" keeps Cohere order
 
 
-# ── One-time init ─────────────────────────────────────────────────────────────
+# ── Process-level resources (loaded once, shared across all sessions) ─────────
+
+@st.cache_resource(show_spinner="Loading pattern index…")
+def _load_resources():
+    _collection, _patterns = load_collection()
+    _embeddings = np.load(Path(__file__).parent / "data" / "embeddings.npy")
+    return _collection, _patterns, _embeddings
+
+_collection, _patterns, _embeddings = _load_resources()
+
+
+# ── Per-session init ──────────────────────────────────────────────────────────
 
 if "openai_client" not in st.session_state:
     st.session_state.openai_client = OpenAI()
-
-if "collection" not in st.session_state:
-    with st.spinner("Loading pattern index…"):
-        collection, patterns = load_collection()
-        st.session_state.collection = collection
-        st.session_state.patterns   = patterns
-
-if "embeddings" not in st.session_state:
-    st.session_state.embeddings = np.load(
-        Path(__file__).parent / "data" / "embeddings.npy"
-    )
 
 if "search_history" not in st.session_state:
     st.session_state.search_history = []
@@ -105,8 +105,8 @@ if search_clicked and query.strip():
     with st.spinner("Searching…"):
         results = reranked_search(
             query=intent.semantic_query,
-            patterns=st.session_state.patterns,
-            embeddings=st.session_state.embeddings,
+            patterns=_patterns,
+            embeddings=_embeddings,
             openai_client=client,
             top_k=20,
             intent=intent,
@@ -128,7 +128,7 @@ if search_clicked and query.strip():
             top3_ids = tuple(p["id"] for p in _sort_results(results, sort_option)[:3])
             rec_map  = cached_recommendations(
                 query, top3_ids,
-                _patterns=st.session_state.patterns,
+                _patterns=_patterns,
                 _client=client,
             )
 
