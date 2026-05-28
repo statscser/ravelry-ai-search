@@ -158,6 +158,17 @@ Results written to `data/eval_results_v2_reranked.json`.
 streamlit run app.py
 ```
 
+## Run with Docker
+
+Make sure you have generated the data files under `ravelry_v0/data/` first (see **Generate data** above), then:
+
+```bash
+cd ravelry_v0
+docker compose up --build
+```
+
+Open http://localhost:8501. The `data/` directory is mounted as a volume so the image stays small and you can regenerate data without rebuilding.
+
 ---
 
 ## Cost & Latency

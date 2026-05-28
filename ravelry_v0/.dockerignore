@@ -1,0 +1,18 @@
+# Data files — mounted as a volume at runtime, not baked into the image
+data/
+
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Git history
+.git/
+.gitignore
+.gitattributes
+
+# Virtual environments
+.venv/

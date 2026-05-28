@@ -9,6 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+ravelry_v0/.env
 
 # Scratch / temp files
 ravelry_v0/temp.py
