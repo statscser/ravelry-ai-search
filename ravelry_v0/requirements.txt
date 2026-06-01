@@ -1,6 +1,9 @@
 chromadb==1.5.9
 cohere==7.0.0
 instructor==1.15.1
+langchain-openai==1.2.2
+langgraph==1.2.3
+langsmith==0.8.8
 numpy==2.4.4
 openai==2.35.0
 python-dotenv==1.2.2

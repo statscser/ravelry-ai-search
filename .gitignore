@@ -14,6 +14,9 @@ ravelry_v0/.env
 # Scratch / temp files
 ravelry_v0/temp.py
 
+# Practice directory
+agent-practice/
+
 # Large generated data files — regenerate locally (see README)
 ravelry_v0/data/patterns.json
 ravelry_v0/data/embeddings.npy
