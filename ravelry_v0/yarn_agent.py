@@ -63,6 +63,7 @@ class State(TypedDict):
     insufficient: list[dict]               # patterns that need more yardage
     search_query: Optional[str]            # query sent to hybrid_search
     human_feedback: Optional[str]          # "放宽" or "放弃"
+    search_intent: Optional[dict]          # PatternSearchIntent.model_dump()
 
 
 # ── Pydantic schemas ──────────────────────────────────────────────────────────
@@ -142,6 +143,56 @@ def _classify_input(user_message: str) -> _ParsedInput:
             {"role": "user", "content": user_message},
         ],
     )
+
+
+_CROCHET_WORDS = {"钩针", "crochet", "hook", "钩"}
+_KNITTING_WORDS = {"棒针", "knitting", "needle", "棒"}
+
+
+def _detect_craft(user_message: str) -> Optional[Literal["Knitting", "Crochet"]]:
+    """Keyword-only craft detection — never infers from context."""
+    msg = user_message.lower()
+    if any(w in msg for w in _CROCHET_WORDS):
+        return "Crochet"
+    if any(w in msg for w in _KNITTING_WORDS):
+        return "Knitting"
+    return None
+
+
+def _parse_search_intent(user_message: str) -> PatternSearchIntent:
+    """Use gpt-4o-mini + instructor to extract free_only/min_rating/semantic_query filters.
+    Craft is determined by keyword matching, not the LLM, to prevent context inference."""
+    client = instructor.from_openai(OpenAI())
+    result = client.chat.completions.create(
+        model="gpt-4o-mini",
+        max_tokens=200,
+        response_model=PatternSearchIntent,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Extract search filters from a yarn + pattern query. Rules:\n"
+                    "- semantic_query: core search terms after removing yarn/weight info "
+                    "(e.g. '300g Bulky 免费钩针帽子' → 'hat')\n"
+                    "- craft: ONLY set if user explicitly mentions one of these keywords:\n"
+                    "  Crochet triggers: '钩针', 'crochet', 'hook', '钩'\n"
+                    "  Knitting triggers: '棒针', 'knitting', 'needle', '棒'\n"
+                    "  If NONE of these words appear in the user message, craft MUST be null.\n"
+                    "  DO NOT infer craft from context, yarn type, or project type.\n"
+                    "  When in doubt, use null.\n"
+                    "- free_only: '免费'/'free' → true; else false\n"
+                    "- min_rating: '评分X以上'/'rating above X' → X; else 0.0\n"
+                    "- yarn_weight: do NOT fill — leave null\n"
+                    "- needle_size_min/max: do NOT fill\n"
+                    "- include_fibers/exclude_fibers: do NOT fill\n"
+                    "- categories: do NOT fill"
+                ),
+            },
+            {"role": "user", "content": user_message},
+        ],
+    )
+    # Override craft with reliable keyword check — prevents LLM from inferring via context
+    return result.model_copy(update={"craft": _detect_craft(user_message)})
 
 
 def _lookup_yarn_on_ravelry(yarn_name: str) -> Optional[dict]:
@@ -282,29 +333,6 @@ def parse_yarn_input(user_message: str) -> YarnInfo:
     return _estimate_yarn_by_llm(yarn_name, skein_count, parsed.preferred_categories)
 
 
-def search_patterns(query: str, yarn_weight: str, top_k: int = 10) -> list[dict]:
-    """Hybrid BM25 + vector search. Yarn weight is included in the query for soft ranking."""
-    full_query = f"{yarn_weight} {query}".strip() if yarn_weight else query
-    results = hybrid_search(
-        query=full_query,
-        patterns=_patterns,
-        embeddings=_embeddings,
-        openai_client=_openai_client,
-        top_k=top_k,
-        intent=PatternSearchIntent(semantic_query=full_query),
-    )
-    return [
-        {
-            "id": p.get("id"),
-            "name": p.get("name", ""),
-            "permalink": p.get("permalink", ""),
-            "yardage": p.get("yardage"),
-            "yardage_max": p.get("yardage_max"),
-            "yarn_weight_description": p.get("yarn_weight_description", ""),
-            "_rrf_score": p.get("_rrf_score", 0),
-        }
-        for p in results
-    ]
 
 
 def check_yardage(pattern: dict, available_yardage: float) -> dict:
@@ -350,38 +378,27 @@ def check_yardage(pattern: dict, available_yardage: float) -> dict:
     }
 
 
-def suggest_smaller_patterns(yarn_weight: str, max_yardage: float) -> list[dict]:
-    """Find patterns whose yardage_max fits within max_yardage, ranked by hybrid search."""
-    fitting_indices = [
-        i for i, p in enumerate(_patterns)
-        if (p.get("yardage") or 0) > 0
-        and (p.get("yardage_max") or p.get("yardage") or 0) <= max_yardage
-        and (p.get("yarn_weight") or {}).get("name", "").lower() == yarn_weight.lower()
-    ]
-    if not fitting_indices:
-        return []
-
-    sub_patterns = [_patterns[i] for i in fitting_indices]
-    sub_embeddings = _embeddings[np.array(fitting_indices)]
-
+def suggest_smaller_patterns(
+    yarn_weight: str,
+    max_yardage: float,
+    intent: Optional[PatternSearchIntent] = None,
+) -> list[dict]:
+    """Find patterns within max_yardage; preserves craft/free_only from intent."""
+    search_intent = (intent or PatternSearchIntent(semantic_query="")).model_copy(update={
+        "yarn_weight": yarn_weight,
+        "semantic_query": "small project",
+    })
     results = hybrid_search(
-        query=f"small quick {yarn_weight.lower()} project",
-        patterns=sub_patterns,
-        embeddings=sub_embeddings,
+        query="small project",
+        patterns=_patterns,
+        embeddings=_embeddings,
         openai_client=_openai_client,
         top_k=5,
-        intent=None,
+        intent=search_intent,
     )
     return [
-        {
-            "id": p.get("id"),
-            "name": p.get("name", ""),
-            "permalink": p.get("permalink", ""),
-            "yardage": p.get("yardage"),
-            "yardage_max": p.get("yardage_max"),
-            "yarn_weight_description": p.get("yarn_weight_description", ""),
-        }
-        for p in results
+        p for p in results
+        if not p.get("yardage") or p.get("yardage", 0) <= max_yardage
     ]
 
 
@@ -395,6 +412,14 @@ def parse_input_node(state: State) -> dict:
     print(f"  [parse] input_type={parsed.input_type!r}  yarn_name={parsed.yarn_name!r}  grams={parsed.yarn_grams}  weight={parsed.yarn_weight!r}")
     info = parse_yarn_input(last_human)
     prefs = info.preferred_categories
+
+    search_intent = _parse_search_intent(last_human)
+    search_intent = search_intent.model_copy(update={
+        "yarn_weight": info.yarn_weight,
+        "semantic_query": " ".join(prefs) if prefs else info.yarn_weight or "knitting project",
+    })
+    print(f"  [intent] craft={search_intent.craft!r}  free_only={search_intent.free_only}  min_rating={search_intent.min_rating}  semantic_query={search_intent.semantic_query!r}")
+
     summary = (
         f"解析：{info.yarn_grams}g {info.yarn_weight} 线 ≈ {info.yarn_yardage:.0f} 码"
         + (f"，偏好：{', '.join(prefs)}" if prefs else "")
@@ -408,16 +433,34 @@ def parse_input_node(state: State) -> dict:
         "yarn_yardage": info.yarn_yardage,
         "preferred_categories": prefs,
         "search_query": " ".join(prefs) if prefs else info.yarn_weight,
+        "search_intent": search_intent.model_dump(),
     }
 
 
 def search_node(state: State) -> dict:
-    query = state.get("search_query") or state.get("yarn_weight") or "knitting project"
-    results = search_patterns(
+    intent_dict = state.get("search_intent") or {}
+    intent = PatternSearchIntent(**intent_dict) if intent_dict else None
+    query = (intent.semantic_query if intent else None) or state.get("search_query") or "knitting project"
+    raw = hybrid_search(
         query=query,
-        yarn_weight=state.get("yarn_weight") or "",
+        patterns=_patterns,
+        embeddings=_embeddings,
+        openai_client=_openai_client,
         top_k=10,
+        intent=intent,
     )
+    results = [
+        {
+            "id": p.get("id"),
+            "name": p.get("name", ""),
+            "permalink": p.get("permalink", ""),
+            "yardage": p.get("yardage"),
+            "yardage_max": p.get("yardage_max"),
+            "yarn_weight_description": p.get("yarn_weight_description", ""),
+            "_rrf_score": p.get("_rrf_score", 0),
+        }
+        for p in raw
+    ]
     return {
         "messages": [AIMessage(content=f"搜索到 {len(results)} 个候选图解")],
         "candidates": results,
@@ -467,9 +510,12 @@ def human_feedback_node(state: State) -> dict:
 
 
 def suggest_smaller_node(state: State) -> dict:
+    intent_dict = state.get("search_intent") or {}
+    intent = PatternSearchIntent(**intent_dict) if intent_dict else None
     results = suggest_smaller_patterns(
         yarn_weight=state.get("yarn_weight") or "",
         max_yardage=state.get("yarn_yardage") or 0,
+        intent=intent,
     )
     return {
         "messages": [AIMessage(content=f"找到 {len(results)} 个线量合适的小项目")],
@@ -570,6 +616,7 @@ def run_scenario(
         "insufficient": [],
         "search_query": None,
         "human_feedback": None,
+        "search_intent": None,
     }
 
     interrupt_payload: dict = {}
@@ -608,15 +655,14 @@ def run_scenario(
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    # Format 1: direct grams
-    run_scenario("我有 200g DK 线，想织帽子或者围巾", thread_id="1")
-    # Format 2: by yarn name (Ravelry lookup → found)
-    run_scenario("我有 3 团 Drops Alpaca DK，想织帽子", thread_id="2")
-    # Format 2: by yarn name (Ravelry lookup → not found → LLM estimate)
-    run_scenario("我有 2 团 Lana Grossa Colors for You，随便织点什么", thread_id="3")
-    # Format 1: direct, low yardage → triggers human-in-the-loop
+    # craft=Crochet, free_only=True
+    run_scenario("我有 300g Bulky 线，找免费钩针图解", thread_id="1")
+    # min_rating=4.5, categories → Hat
+    run_scenario("我有 200g DK 线，评分4.5以上的帽子", thread_id="2")
+    # craft=Knitting
+    run_scenario("我有 3 团 Drops Alpaca DK，棒针图解", thread_id="3")
+    # low yardage → triggers human-in-the-loop
     run_scenario("50g lace 线，想织毛衣", thread_id="4", simulate_feedback="放宽")
-    run_scenario("300g Bulky 免费钩针图解", thread_id="5")
 
 
 if __name__ == "__main__":
