@@ -9,15 +9,15 @@ wheels/
 # Virtual environments
 .venv
 .env
-ravelry_v0/.env
+ravelry_search/.env
 
 # Scratch / temp files
-ravelry_v0/temp.py
+ravelry_search/temp.py
 
 # Practice directory
 agent-practice/
 
 # Large generated data files — regenerate locally (see README)
-ravelry_v0/data/patterns.json
-ravelry_v0/data/embeddings.npy
-ravelry_v0/data/eval_results_*.json
+ravelry_search/data/patterns.json
+ravelry_search/data/embeddings.npy
+ravelry_search/data/eval_results_*.json
