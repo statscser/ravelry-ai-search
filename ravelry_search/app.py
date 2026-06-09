@@ -8,14 +8,13 @@ import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from langfuse import Langfuse, observe, get_client
+from langfuse import observe, get_client, propagate_attributes
 
 from hybrid_search import reranked_search
 from rag_chroma import load_collection, parse_query
 from recommendation import generate_recommendations_batch
 
 load_dotenv()
-langfuse = Langfuse()
 
 st.set_page_config(page_title="Ravelry AI Search", page_icon="🧶", layout="wide")
 st.title("🧶 Ravelry AI Search")
@@ -36,47 +35,49 @@ def run_search(
       parse_query → reranked_search → generate_recommendations_batch (top-3)
 
     Returns (intent, results, rec_map) where rec_map is {pattern_id: rec_text}.
-    Note: generate_recommendation runs in threads; those spans appear as separate
-    traces in Langfuse because Python's contextvars don't cross thread boundaries.
     """
-    intent = parse_query(query, openai_client)
+    # propagate_attributes sets the Langfuse trace name on all spans in this
+    # context. @observe(name=...) only names the observation; trace_name is a
+    # separate OTel attribute that the Langfuse dashboard filters on.
+    with propagate_attributes(trace_name="ravelry_search"):
+        intent = parse_query(query, openai_client)
 
-    results = reranked_search(
-        query=intent.semantic_query,
-        patterns=patterns,
-        embeddings=embeddings,
-        openai_client=openai_client,
-        top_k=top_k,
-        intent=intent,
-    )
-
-    # Dynamic threshold: keep scores >= 0.3, guarantee at least 5 results
-    MIN_RESULTS     = 5
-    SCORE_THRESHOLD = 0.3
-    filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
-    results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
-
-    recs    = generate_recommendations_batch(query=query, patterns=results[:3],
-                                             client=openai_client, top_n=3)
-    rec_map = {p["id"]: rec for p, rec in zip(results[:3], recs)}
-
-    try:
-        get_client().update_current_span(
-            metadata={
-                "cohere_model": "rerank-multilingual-v3.0",
-                "top_k": top_k,
-                "intent": {
-                    "craft": intent.craft,
-                    "free_only": intent.free_only,
-                    "min_rating": intent.min_rating,
-                    "yarn_weight": intent.yarn_weight,
-                },
-            }
+        results = reranked_search(
+            query=intent.semantic_query,
+            patterns=patterns,
+            embeddings=embeddings,
+            openai_client=openai_client,
+            top_k=top_k,
+            intent=intent,
         )
-    except Exception:
-        pass
 
-    langfuse.flush()
+        # Dynamic threshold: keep scores >= 0.3, guarantee at least 5 results
+        MIN_RESULTS     = 5
+        SCORE_THRESHOLD = 0.3
+        filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
+        results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
+
+        recs    = generate_recommendations_batch(query=query, patterns=results[:3],
+                                                 client=openai_client, top_n=3)
+        rec_map = {p["id"]: rec for p, rec in zip(results[:3], recs)}
+
+        try:
+            get_client().update_current_span(
+                metadata={
+                    "cohere_model": "rerank-multilingual-v3.0",
+                    "top_k": top_k,
+                    "intent": {
+                        "craft": intent.craft,
+                        "free_only": intent.free_only,
+                        "min_rating": intent.min_rating,
+                        "yarn_weight": intent.yarn_weight,
+                    },
+                }
+            )
+        except Exception:
+            pass
+
+    get_client().flush()
 
     return intent, results, rec_map
 

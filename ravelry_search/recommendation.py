@@ -1,9 +1,6 @@
 """
 recommendation.py — One-sentence recommendations for search results.
-Uses ThreadPoolExecutor for true I/O parallelism with OpenAI API calls.
 """
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -86,34 +83,18 @@ def generate_recommendations_batch(
     top_n: int = 5,
 ) -> list[str]:
     """
-    Generate recommendations for the first top_n patterns in parallel.
-    Uses ThreadPoolExecutor — works correctly inside Streamlit
-    (no asyncio event loop conflicts).
-    Returns a list of strings in the same order as input patterns.
+    Generate recommendations sequentially so each generate_recommendation span
+    is correctly nested under the parent Langfuse trace.
     Falls back to empty string on individual failures.
     """
-    targets = patterns[:top_n]
-    results = [""] * len(targets)
-
-    # Each thread gets its own OpenAI client to avoid shared state issues
-    def _generate(idx: int, pattern: dict) -> tuple[int, str]:
-        thread_client = OpenAI()  # lightweight — reuses connection pool
+    results = []
+    for pattern in patterns[:top_n]:
         try:
-            rec = generate_recommendation(query, pattern, thread_client)
-            return idx, rec
+            rec = generate_recommendation(query, pattern, client)
+            results.append(rec)
         except Exception as e:
             print(f"[recommendation] ERROR for pattern {pattern.get('name')}: {e}")
-            return idx, ""
-
-    with ThreadPoolExecutor(max_workers=min(top_n, 5)) as executor:
-        futures = {
-            executor.submit(_generate, i, p): i
-            for i, p in enumerate(targets)
-        }
-        for future in as_completed(futures):
-            idx, rec = future.result()  # never raises — errors handled inside _generate
-            results[idx] = rec
-
+            results.append("")
     return results
 
 
@@ -151,7 +132,7 @@ def main() -> None:
     print(f"  {results[0]['name']}\n  → {rec}\n")
 
     # Batch — measure wall time
-    print("── Batch (top 5, parallel) ────────────────────────")
+    print("── Batch (top 5, sequential) ───────────────────────")
     t0   = time.perf_counter()
     recs = generate_recommendations_batch(query, results, openai_client, top_n=5)
     elapsed = time.perf_counter() - t0

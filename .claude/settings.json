@@ -13,8 +13,13 @@
       "Bash(git rm *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
+      "Bash(cd:*)",
       "Bash(python -c ' *)",
-      "Bash(.venv\\\\Scripts\\\\python agent-practice\\\\react_agent.py)"
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
+      "Bash(uv:*)"
     ]
   }
 }
