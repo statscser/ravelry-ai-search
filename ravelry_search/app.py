@@ -77,8 +77,6 @@ def run_search(
         except Exception:
             pass
 
-    get_client().flush()
-
     return intent, results, rec_map
 
 
@@ -215,6 +213,9 @@ with tab_search:
                 embeddings=_embeddings,
                 openai_client=client,
             )
+        # Flush after run_search returns so the root span is fully closed
+        # before the OTel exporter drains the queue.
+        get_client().flush()
 
         # Build filter summary string from the returned intent
         filters = []
