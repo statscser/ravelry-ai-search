@@ -76,7 +76,7 @@ def _rrf_merge(rankings: list[list[int]], k: int = 60) -> list[tuple[int, float]
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
-@observe()
+@observe(as_type="span")
 def hybrid_search(
     query: str,
     patterns: list[dict],
@@ -141,7 +141,7 @@ def hybrid_search(
 
 # ── Cohere rerank ─────────────────────────────────────────────────────────────
 
-@observe()
+@observe(as_type="span")
 def reranked_search(
     query: str,
     patterns: list[dict],

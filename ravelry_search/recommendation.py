@@ -52,7 +52,7 @@ def _user_message(query: str, pattern: dict) -> str:
     return "\n".join(lines)
 
 
-@observe()
+@observe(as_type="generation")
 def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
     """Generate a single recommendation. Raises on API error."""
     response = client.chat.completions.create(

@@ -66,7 +66,7 @@ Examples:
   → semantic_query="cozy sweater", exclude_fibers=["mohair"]
 """
 
-@observe()
+@observe(as_type="generation")
 def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
     instructor_client = instructor.from_openai(client)
     response = instructor_client.chat.completions.create(
