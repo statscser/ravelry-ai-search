@@ -11,6 +11,8 @@ import instructor
 from pydantic import BaseModel
 from typing import Optional, Literal
 
+from langfuse import observe, get_client
+
 load_dotenv()
 
 PATTERNS_PATH = Path(__file__).parent / "data" / "patterns.json"
@@ -64,15 +66,24 @@ Examples:
   → semantic_query="cozy sweater", exclude_fibers=["mohair"]
 """
 
+@observe()
 def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
     instructor_client = instructor.from_openai(client)
-    return instructor_client.chat.completions.create(
+    response = instructor_client.chat.completions.create(
         model="gpt-4o-mini",
         max_tokens=500,
         response_model=PatternSearchIntent,
         messages=[{"role": "system", "content": SYSTEM_PROMPT},
                   {"role": "user", "content": query}]
     )
+    try:
+        raw_usage = response._raw_response.usage
+        get_client().update_current_generation(
+            usage_details={"input": raw_usage.prompt_tokens, "output": raw_usage.completion_tokens}
+        )
+    except Exception:
+        pass
+    return response
 
 def build_metadata(pattern: dict) -> dict:
     """Extract filterable metadata fields from a pattern dict."""

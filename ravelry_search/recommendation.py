@@ -8,6 +8,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from langfuse import observe, get_client
+
 load_dotenv()
 
 SYSTEM_PROMPT = (
@@ -53,6 +55,7 @@ def _user_message(query: str, pattern: dict) -> str:
     return "\n".join(lines)
 
 
+@observe()
 def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
     """Generate a single recommendation. Raises on API error."""
     response = client.chat.completions.create(
@@ -64,6 +67,15 @@ def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
             {"role": "user",   "content": _user_message(query, pattern)},
         ],
     )
+    try:
+        get_client().update_current_generation(
+            usage_details={
+                "input": response.usage.prompt_tokens,
+                "output": response.usage.completion_tokens,
+            }
+        )
+    except Exception:
+        pass
     return response.choices[0].message.content.strip()
 
 

@@ -14,6 +14,7 @@ from openai import OpenAI
 from rank_bm25 import BM25Okapi
 
 from rag_chroma import PatternSearchIntent, parse_query
+from langfuse import observe
 
 load_dotenv()
 
@@ -75,6 +76,7 @@ def _rrf_merge(rankings: list[list[int]], k: int = 60) -> list[tuple[int, float]
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
+@observe()
 def hybrid_search(
     query: str,
     patterns: list[dict],
@@ -139,6 +141,7 @@ def hybrid_search(
 
 # ── Cohere rerank ─────────────────────────────────────────────────────────────
 
+@observe()
 def reranked_search(
     query: str,
     patterns: list[dict],
