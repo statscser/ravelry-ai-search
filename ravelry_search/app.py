@@ -10,6 +10,7 @@ from openai import OpenAI
 
 from langfuse.decorators import observe, langfuse_context
 
+from guardrails import is_knitting_related, get_fallback_patterns, relax_intent, OFF_TOPIC_RESPONSE
 from hybrid_search import reranked_search
 from rag_chroma import load_collection, parse_query_cached
 from recommendation import generate_recommendations_batch
@@ -53,6 +54,33 @@ def run_search(
     SCORE_THRESHOLD = 0.3
     filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
     results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
+
+    # Tier 1: relax constraints and retry if no results
+    if not results and intent:
+        relaxed_intent, relax_msg = relax_intent(intent)
+        if relax_msg:
+            results = reranked_search(
+                query=intent.semantic_query,
+                patterns=patterns,
+                embeddings=embeddings,
+                openai_client=openai_client,
+                top_k=top_k,
+                intent=relaxed_intent,
+            )
+            try:
+                langfuse_context.update_current_observation(metadata={"fallback": relax_msg})
+            except Exception:
+                pass
+
+    # Tier 2: return top-rated patterns if still no results
+    if not results:
+        results = get_fallback_patterns(patterns, top_n=10)
+        try:
+            langfuse_context.update_current_observation(
+                metadata={"fallback": "returned top-rated patterns"}
+            )
+        except Exception:
+            pass
 
     recs    = generate_recommendations_batch(query=query, patterns=results[:3],
                                              client=openai_client, top_n=3)
@@ -203,39 +231,47 @@ with tab_search:
         st.session_state.pop("prefill_query", None)  # clear prefill now that it's been submitted
         client = st.session_state.openai_client
 
-        with st.spinner("Searching…"):
-            intent, results, rec_map = run_search(
-                query=query,
-                patterns=_patterns,
-                embeddings=_embeddings,
-                openai_client=client,
+        if not is_knitting_related(query):
+            st.session_state.search_results = []
+            st.session_state.search_rec_map = {}
+            st.session_state.search_caption = OFF_TOPIC_RESPONSE
+            st.session_state.off_topic = True
+        else:
+            st.session_state.off_topic = False
+
+            with st.spinner("Searching…"):
+                intent, results, rec_map = run_search(
+                    query=query,
+                    patterns=_patterns,
+                    embeddings=_embeddings,
+                    openai_client=client,
+                )
+
+            # Build filter summary string from the returned intent
+            filters = []
+            if intent.craft:           filters.append(intent.craft)
+            if intent.yarn_weight:     filters.append(f"yarn: {intent.yarn_weight}")
+            if intent.needle_size_min: filters.append(f"needle ≥ {intent.needle_size_min}mm")
+            if intent.needle_size_max: filters.append(f"needle ≤ {intent.needle_size_max}mm")
+            if intent.free_only:       filters.append("free only")
+            if intent.min_rating > 0:  filters.append(f"rating ≥ {intent.min_rating}")
+            if intent.exclude_fibers:  filters.append(f"exclude: {', '.join(intent.exclude_fibers)}")
+            if intent.include_fibers:  filters.append(f"include: {', '.join(intent.include_fibers)}")
+            if intent.categories:      filters.append(f"category: {intent.categories}")
+
+            # Update search history — deduplicated, max 10
+            history = st.session_state.search_history
+            if query not in history:
+                history.insert(0, query)
+            st.session_state.search_history = history[:10]
+
+            # Persist to session state — display phase reads from here
+            st.session_state.search_results = results
+            st.session_state.search_rec_map = rec_map
+            st.session_state.search_caption = (
+                f"LLM understanding：「{intent.semantic_query}」 — "
+                + (" · ".join(filters) if filters else "no filters")
             )
-
-        # Build filter summary string from the returned intent
-        filters = []
-        if intent.craft:           filters.append(intent.craft)
-        if intent.yarn_weight:     filters.append(f"yarn: {intent.yarn_weight}")
-        if intent.needle_size_min: filters.append(f"needle ≥ {intent.needle_size_min}mm")
-        if intent.needle_size_max: filters.append(f"needle ≤ {intent.needle_size_max}mm")
-        if intent.free_only:       filters.append("free only")
-        if intent.min_rating > 0:  filters.append(f"rating ≥ {intent.min_rating}")
-        if intent.exclude_fibers:  filters.append(f"exclude: {', '.join(intent.exclude_fibers)}")
-        if intent.include_fibers:  filters.append(f"include: {', '.join(intent.include_fibers)}")
-        if intent.categories:      filters.append(f"category: {intent.categories}")
-
-        # Update search history — deduplicated, max 10
-        history = st.session_state.search_history
-        if query not in history:
-            history.insert(0, query)
-        st.session_state.search_history = history[:10]
-
-        # Persist to session state — display phase reads from here
-        st.session_state.search_results = results
-        st.session_state.search_rec_map = rec_map
-        st.session_state.search_caption = (
-            f"LLM understanding：「{intent.semantic_query}」 — "
-            + (" · ".join(filters) if filters else "no filters")
-        )
 
     # ── Display phase (runs on every re-run, including sort radio clicks) ─────
 
@@ -245,7 +281,7 @@ with tab_search:
 
         st.caption(st.session_state.search_caption)
 
-        if not results:
+        if not results and not st.session_state.get("off_topic"):
             st.warning("No results found. Try relaxing your filters.")
         else:
             # Sort control — purely visual, does not re-run the search
