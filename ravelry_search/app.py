@@ -150,10 +150,13 @@ def _fetch_admin_stats() -> dict:
         latencies = [t["latency"] for t in traces if t.get("latency") is not None]
         llm_costs = [t["totalCost"] for t in traces if t.get("totalCost") is not None]
 
-        queries = [
-            t["input"] for t in traces
-            if isinstance(t.get("input"), str) and t["input"]
-        ]
+        queries = []
+        for t in traces:
+            inp = t.get("input")
+            if isinstance(inp, str) and inp:
+                queries.append(inp)
+            elif isinstance(inp, dict) and isinstance(inp.get("query"), str) and inp["query"]:
+                queries.append(inp["query"])
 
         p50 = statistics.median(latencies) if latencies else None
         p95 = sorted(latencies)[int(len(latencies) * 0.95)] if len(latencies) >= 2 else (latencies[0] if latencies else None)
@@ -417,7 +420,7 @@ with tab_admin:
             st.metric(
                 "Avg cost / search",
                 f"${avg_cost:.4f}" if avg_cost is not None else "N/A",
-                help="GPT-4o-mini: $0.15/1M input · $0.60/1M output · Cohere: $1/1000 calls",
+                help="Haiku 4.5: $1.00/1M input · $5.00/1M output · Cohere: $1/1000 calls",
             )
 
         with col3:
