@@ -12,7 +12,7 @@ import instructor
 from pydantic import BaseModel
 from typing import Optional, Literal
 
-from langfuse import observe, get_client
+from langfuse.decorators import observe, langfuse_context
 
 load_dotenv()
 
@@ -70,8 +70,9 @@ Examples:
 _parse_cache: dict[str, PatternSearchIntent] = {}
 
 
-@observe(as_type="generation")
+@observe(as_type="generation", capture_input=False)
 def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
+    langfuse_context.update_current_observation(input=query)
     instructor_client = instructor.from_anthropic(anthropic.Anthropic())
     response = instructor_client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -82,21 +83,23 @@ def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
     )
     try:
         raw_usage = response._raw_response.usage
-        get_client().update_current_generation(
-            usage_details={"input": raw_usage.input_tokens, "output": raw_usage.output_tokens}
+        langfuse_context.update_current_observation(
+            usage={"input": raw_usage.input_tokens, "output": raw_usage.output_tokens}
         )
     except Exception:
         pass
     return response
 
-@observe(as_type="span", name="parse_query_cached")
+@observe(as_type="span", name="parse_query_cached", capture_input=False)
 def parse_query_cached(query: str, client: OpenAI) -> PatternSearchIntent:
     key = query.strip().lower()
     cache_hit = key in _parse_cache
     if not cache_hit:
         _parse_cache[key] = parse_query(query, client)
     try:
-        get_client().update_current_span(metadata={"cache_hit": cache_hit})
+        langfuse_context.update_current_observation(
+            input=query, metadata={"cache_hit": cache_hit}
+        )
     except Exception:
         pass
     return _parse_cache[key]

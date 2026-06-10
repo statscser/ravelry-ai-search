@@ -4,7 +4,7 @@ cohere==7.0.0
 instructor==1.15.1
 langchain-openai==1.2.2
 langgraph==1.2.3
-langfuse>=2.0.0
+langfuse==2.60.0
 langsmith==0.8.8
 numpy==2.4.4
 openai==2.35.0

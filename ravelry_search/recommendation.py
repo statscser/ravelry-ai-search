@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from langfuse import observe, get_client
+from langfuse.decorators import observe, langfuse_context
 
 load_dotenv()
 
@@ -55,9 +55,12 @@ def _user_message(query: str, pattern: dict) -> str:
     return "\n".join(lines)
 
 
-@observe(as_type="generation")
+@observe(as_type="generation", capture_input=False)
 def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
     """Generate a single recommendation. Raises on API error."""
+    langfuse_context.update_current_observation(
+        input={"query": query, "pattern": pattern.get("name")}
+    )
     anthropic_client = anthropic.Anthropic()
     response = anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -66,8 +69,8 @@ def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
         messages=[{"role": "user", "content": _user_message(query, pattern)}],
     )
     try:
-        get_client().update_current_generation(
-            usage_details={
+        langfuse_context.update_current_observation(
+            usage={
                 "input": response.usage.input_tokens,
                 "output": response.usage.output_tokens,
             }
@@ -91,13 +94,17 @@ def generate_recommendations_batch(
     sliced = patterns[:top_n]
     if not sliced:
         return []
-    ctx = contextvars.copy_context()
 
-    def _run(pattern):
+    # Each task needs its own Context copy — a single Context cannot be entered
+    # by more than one thread at a time. All copies are made here in the parent
+    # thread so they all inherit the active Langfuse trace context.
+    task_ctxs = [contextvars.copy_context() for _ in sliced]
+
+    def _run(ctx, pattern):
         return ctx.run(generate_recommendation, query, pattern, client)
 
     with ThreadPoolExecutor(max_workers=len(sliced)) as executor:
-        futures = [executor.submit(_run, p) for p in sliced]
+        futures = [executor.submit(_run, ctx, p) for ctx, p in zip(task_ctxs, sliced)]
 
     results = []
     for f in futures:

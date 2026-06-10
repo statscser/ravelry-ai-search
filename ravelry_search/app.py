@@ -1,6 +1,5 @@
 import datetime
 import statistics
-import threading
 from collections import Counter
 from pathlib import Path
 
@@ -9,7 +8,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from langfuse import observe, get_client, propagate_attributes
+from langfuse.decorators import observe, langfuse_context
 
 from hybrid_search import reranked_search
 from rag_chroma import load_collection, parse_query_cached
@@ -23,7 +22,7 @@ st.title("🧶 Ravelry AI Search")
 
 # ── Search pipeline (single Langfuse root trace) ──────────────────────────────
 
-@observe(name="ravelry_search")
+@observe(name="ravelry_search", capture_input=False, capture_output=False)
 def run_search(
     query: str,
     patterns: list[dict],
@@ -37,46 +36,43 @@ def run_search(
 
     Returns (intent, results, rec_map) where rec_map is {pattern_id: rec_text}.
     """
-    # propagate_attributes sets the Langfuse trace name on all spans in this
-    # context. @observe(name=...) only names the observation; trace_name is a
-    # separate OTel attribute that the Langfuse dashboard filters on.
-    with propagate_attributes(trace_name="ravelry_search"):
-        intent = parse_query_cached(query, openai_client)
+    langfuse_context.update_current_observation(input={"query": query, "top_k": top_k})
+    intent = parse_query_cached(query, openai_client)
 
-        results = reranked_search(
-            query=intent.semantic_query,
-            patterns=patterns,
-            embeddings=embeddings,
-            openai_client=openai_client,
-            top_k=top_k,
-            intent=intent,
+    results = reranked_search(
+        query=intent.semantic_query,
+        patterns=patterns,
+        embeddings=embeddings,
+        openai_client=openai_client,
+        top_k=top_k,
+        intent=intent,
+    )
+
+    # Dynamic threshold: keep scores >= 0.3, guarantee at least 5 results
+    MIN_RESULTS     = 5
+    SCORE_THRESHOLD = 0.3
+    filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
+    results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
+
+    recs    = generate_recommendations_batch(query=query, patterns=results[:3],
+                                             client=openai_client, top_n=3)
+    rec_map = {p["id"]: rec for p, rec in zip(results[:3], recs)}
+
+    try:
+        langfuse_context.update_current_observation(
+            metadata={
+                "cohere_model": "rerank-multilingual-v3.0",
+                "top_k": top_k,
+                "intent": {
+                    "craft": intent.craft,
+                    "free_only": intent.free_only,
+                    "min_rating": intent.min_rating,
+                    "yarn_weight": intent.yarn_weight,
+                },
+            }
         )
-
-        # Dynamic threshold: keep scores >= 0.3, guarantee at least 5 results
-        MIN_RESULTS     = 5
-        SCORE_THRESHOLD = 0.3
-        filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
-        results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
-
-        recs    = generate_recommendations_batch(query=query, patterns=results[:3],
-                                                 client=openai_client, top_n=3)
-        rec_map = {p["id"]: rec for p, rec in zip(results[:3], recs)}
-
-        try:
-            get_client().update_current_span(
-                metadata={
-                    "cohere_model": "rerank-multilingual-v3.0",
-                    "top_k": top_k,
-                    "intent": {
-                        "craft": intent.craft,
-                        "free_only": intent.free_only,
-                        "min_rating": intent.min_rating,
-                        "yarn_weight": intent.yarn_weight,
-                    },
-                }
-            )
-        except Exception:
-            pass
+    except Exception:
+        pass
 
     return intent, results, rec_map
 
@@ -214,7 +210,6 @@ with tab_search:
                 embeddings=_embeddings,
                 openai_client=client,
             )
-        threading.Thread(target=get_client().flush, daemon=True).start()
 
         # Build filter summary string from the returned intent
         filters = []

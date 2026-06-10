@@ -14,7 +14,7 @@ from openai import OpenAI
 from rank_bm25 import BM25Okapi
 
 from rag_chroma import PatternSearchIntent, parse_query
-from langfuse import observe
+from langfuse.decorators import observe, langfuse_context
 
 load_dotenv()
 
@@ -76,7 +76,7 @@ def _rrf_merge(rankings: list[list[int]], k: int = 60) -> list[tuple[int, float]
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
-@observe(as_type="span")
+@observe(as_type="span", capture_input=False, capture_output=False)
 def hybrid_search(
     query: str,
     patterns: list[dict],
@@ -93,6 +93,7 @@ def hybrid_search(
     intent     : if provided, applies the same metadata pre-filter as rag_chroma.search()
     Returns top_k pattern dicts augmented with _rrf_score, _bm25_rank, _vec_rank, _vec_sim.
     """
+    langfuse_context.update_current_observation(input={"query": query, "top_k": top_k})
     # ── 1. Metadata pre-filter ────────────────────────────────────────────────
     if intent is not None:
         local_indices = [i for i, p in enumerate(patterns) if _passes_filter(p, intent)]
@@ -141,7 +142,7 @@ def hybrid_search(
 
 # ── Cohere rerank ─────────────────────────────────────────────────────────────
 
-@observe(as_type="span")
+@observe(as_type="span", capture_input=False, capture_output=False)
 def reranked_search(
     query: str,
     patterns: list[dict],
@@ -155,6 +156,7 @@ def reranked_search(
     Cohere rerank-multilingual-v3.0. COHERE_API_KEY must be in .env.
     Returns top_k results augmented with _cohere_score (and hybrid fields).
     """
+    langfuse_context.update_current_observation(input={"query": query, "top_k": top_k})
     candidates = hybrid_search(
         query=query,
         patterns=patterns,
