@@ -56,6 +56,7 @@ def run_search(
     results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
 
     # Tier 1: relax constraints and retry if no results
+    relax_msg = None
     if not results and intent:
         relaxed_intent, relax_msg = relax_intent(intent)
         if relax_msg:
@@ -102,7 +103,7 @@ def run_search(
     except Exception:
         pass
 
-    return intent, results, rec_map
+    return intent, results, rec_map, relax_msg
 
 
 def _sort_results(results: list[dict], sort_option: str) -> list[dict]:
@@ -240,7 +241,7 @@ with tab_search:
             st.session_state.off_topic = False
 
             with st.spinner("Searching…"):
-                intent, results, rec_map = run_search(
+                intent, results, rec_map, relax_msg = run_search(
                     query=query,
                     patterns=_patterns,
                     embeddings=_embeddings,
@@ -272,6 +273,10 @@ with tab_search:
                 f"LLM understanding：「{intent.semantic_query}」 — "
                 + (" · ".join(filters) if filters else "no filters")
             )
+            if relax_msg:
+                st.session_state.search_caption = (
+                    f"⚡ {relax_msg} — " + st.session_state.search_caption
+                )
 
     # ── Display phase (runs on every re-run, including sort radio clicks) ─────
 
