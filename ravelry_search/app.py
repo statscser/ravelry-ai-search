@@ -1,5 +1,6 @@
 import datetime
 import statistics
+import threading
 from collections import Counter
 from pathlib import Path
 
@@ -213,9 +214,7 @@ with tab_search:
                 embeddings=_embeddings,
                 openai_client=client,
             )
-        # Flush after run_search returns so the root span is fully closed
-        # before the OTel exporter drains the queue.
-        get_client().flush()
+        threading.Thread(target=get_client().flush, daemon=True).start()
 
         # Build filter summary string from the returned intent
         filters = []

@@ -92,8 +92,13 @@ def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
 @observe(as_type="span", name="parse_query_cached")
 def parse_query_cached(query: str, client: OpenAI) -> PatternSearchIntent:
     key = query.strip().lower()
-    if key not in _parse_cache:
+    cache_hit = key in _parse_cache
+    if not cache_hit:
         _parse_cache[key] = parse_query(query, client)
+    try:
+        get_client().update_current_span(metadata={"cache_hit": cache_hit})
+    except Exception:
+        pass
     return _parse_cache[key]
 
 def build_metadata(pattern: dict) -> dict:

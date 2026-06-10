@@ -3,6 +3,8 @@ recommendation.py — One-sentence recommendations for search results.
 """
 
 import anthropic
+import contextvars
+from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -82,17 +84,27 @@ def generate_recommendations_batch(
     top_n: int = 5,
 ) -> list[str]:
     """
-    Generate recommendations sequentially so each generate_recommendation span
-    is correctly nested under the parent Langfuse trace.
+    Generate recommendations in parallel. contextvars.copy_context() propagates
+    the Langfuse trace context into each thread so spans nest correctly.
     Falls back to empty string on individual failures.
     """
+    sliced = patterns[:top_n]
+    if not sliced:
+        return []
+    ctx = contextvars.copy_context()
+
+    def _run(pattern):
+        return ctx.run(generate_recommendation, query, pattern, client)
+
+    with ThreadPoolExecutor(max_workers=len(sliced)) as executor:
+        futures = [executor.submit(_run, p) for p in sliced]
+
     results = []
-    for pattern in patterns[:top_n]:
+    for f in futures:
         try:
-            rec = generate_recommendation(query, pattern, client)
-            results.append(rec)
+            results.append(f.result())
         except Exception as e:
-            print(f"[recommendation] ERROR for pattern {pattern.get('name')}: {e}")
+            print(f"[recommendation] ERROR: {e}")
             results.append("")
     return results
 
