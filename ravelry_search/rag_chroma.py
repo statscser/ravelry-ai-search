@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import anthropic
 import chromadb
 import numpy as np
 from dotenv import load_dotenv
@@ -66,24 +67,34 @@ Examples:
   → semantic_query="cozy sweater", exclude_fibers=["mohair"]
 """
 
+_parse_cache: dict[str, PatternSearchIntent] = {}
+
+
 @observe(as_type="generation")
 def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
-    instructor_client = instructor.from_openai(client)
-    response = instructor_client.chat.completions.create(
-        model="gpt-4o-mini",
+    instructor_client = instructor.from_anthropic(anthropic.Anthropic())
+    response = instructor_client.messages.create(
+        model="claude-haiku-4-5-20251001",
         max_tokens=500,
+        system=SYSTEM_PROMPT,
         response_model=PatternSearchIntent,
-        messages=[{"role": "system", "content": SYSTEM_PROMPT},
-                  {"role": "user", "content": query}]
+        messages=[{"role": "user", "content": query}]
     )
     try:
         raw_usage = response._raw_response.usage
         get_client().update_current_generation(
-            usage_details={"input": raw_usage.prompt_tokens, "output": raw_usage.completion_tokens}
+            usage_details={"input": raw_usage.input_tokens, "output": raw_usage.output_tokens}
         )
     except Exception:
         pass
     return response
+
+@observe(as_type="span", name="parse_query_cached")
+def parse_query_cached(query: str, client: OpenAI) -> PatternSearchIntent:
+    key = query.strip().lower()
+    if key not in _parse_cache:
+        _parse_cache[key] = parse_query(query, client)
+    return _parse_cache[key]
 
 def build_metadata(pattern: dict) -> dict:
     """Extract filterable metadata fields from a pattern dict."""

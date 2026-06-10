@@ -2,6 +2,7 @@
 recommendation.py — One-sentence recommendations for search results.
 """
 
+import anthropic
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -55,25 +56,23 @@ def _user_message(query: str, pattern: dict) -> str:
 @observe(as_type="generation")
 def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
     """Generate a single recommendation. Raises on API error."""
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
+    anthropic_client = anthropic.Anthropic()
+    response = anthropic_client.messages.create(
+        model="claude-haiku-4-5-20251001",
         max_tokens=80,
-        temperature=0.3,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user",   "content": _user_message(query, pattern)},
-        ],
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": _user_message(query, pattern)}],
     )
     try:
         get_client().update_current_generation(
             usage_details={
-                "input": response.usage.prompt_tokens,
-                "output": response.usage.completion_tokens,
+                "input": response.usage.input_tokens,
+                "output": response.usage.output_tokens,
             }
         )
     except Exception:
         pass
-    return response.choices[0].message.content.strip()
+    return response.content[0].text.strip()
 
 
 def generate_recommendations_batch(

@@ -11,7 +11,7 @@ from openai import OpenAI
 from langfuse import observe, get_client, propagate_attributes
 
 from hybrid_search import reranked_search
-from rag_chroma import load_collection, parse_query
+from rag_chroma import load_collection, parse_query_cached
 from recommendation import generate_recommendations_batch
 
 load_dotenv()
@@ -40,7 +40,7 @@ def run_search(
     # context. @observe(name=...) only names the observation; trace_name is a
     # separate OTel attribute that the Langfuse dashboard filters on.
     with propagate_attributes(trace_name="ravelry_search"):
-        intent = parse_query(query, openai_client)
+        intent = parse_query_cached(query, openai_client)
 
         results = reranked_search(
             query=intent.semantic_query,
