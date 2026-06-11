@@ -7,12 +7,12 @@ KNITTING_KEYWORDS = {
     # English
     "knit", "knitting", "crochet", "yarn", "pattern", "needle", "hook",
     "stitch", "wool", "fiber", "fibre", "gauge", "swatch", "ravelry",
-    "cardigan", "sweater", "pullover", "vest", "shawl", "sock", "hat",
+    "cardigan", "sweater", "pullover", "vest", "shawl", "sock", "hat", "top", "blouse","dress",
     "beanie", "mitten", "glove", "scarf", "cowl", "blanket", "lace",
     "cable", "colorwork", "dk", "worsted", "bulky", "fingering", "aran",
     # Chinese
     "棒针", "钩针", "编织", "毛线", "图解", "针", "线", "毛衣", "背心",
-    "帽子", "袜子", "围巾", "披肩", "手套", "毯子",
+    "帽子", "袜子", "围巾", "披肩", "手套", "毯子", "上衣", "裙子"
 }
 
 OFF_TOPIC_RESPONSE = (
