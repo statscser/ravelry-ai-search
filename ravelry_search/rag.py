@@ -1,4 +1,5 @@
 import json
+import time
 import numpy as np
 from pathlib import Path
 from openai import OpenAI
@@ -11,10 +12,40 @@ load_dotenv()
 def load_patterns(path: str = "data/patterns.json") -> list[dict]:
     """加载 patterns 数据"""
     patterns = json.loads(Path(path).read_text(encoding="utf-8"))
+    print(f"  ✅ 加载了 {len(patterns)} 个 pattern")
     return patterns
 
+def _embed_batch(client: OpenAI, batch: list[str], out: list) -> None:
+    """Embed a batch, retrying on 429 and halving the batch on 431."""
+    for attempt in range(6):
+        try:
+            response = client.embeddings.create(
+                input=batch,
+                model="text-embedding-3-small"
+            )
+            out.extend([e.embedding for e in response.data])
+            return
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg or "rate_limit" in msg.lower():
+                wait = 2 ** attempt
+                print(f"  Rate limited, waiting {wait}s... (attempt {attempt + 1}/6)")
+                time.sleep(wait)
+            elif "431" in msg or "headers too large" in msg.lower():
+                if len(batch) == 1:
+                    raise  # single text still too large — give up
+                mid = len(batch) // 2
+                print(f"  431 on batch of {len(batch)}, splitting into {mid} + {len(batch) - mid}")
+                _embed_batch(client, batch[:mid], out)
+                _embed_batch(client, batch[mid:], out)
+                return
+            else:
+                raise
+    raise RuntimeError(f"Failed after 6 retries on batch of {len(batch)}")
+
+
 def get_or_create_embeddings(
-    patterns: list[dict], 
+    patterns: list[dict],
     client: OpenAI,
     cache_path: str = "data/embeddings.npy"
 ) -> np.ndarray:
@@ -22,30 +53,45 @@ def get_or_create_embeddings(
     生成或加载缓存的 embeddings。
     如果 cache_path 存在，直接加载。
     如果不存在，调用 OpenAI API 生成，然后保存。
-    注意：1000 条不要一条一条调，用批量请求。
+    支持断点续传（checkpoint）和 429 指数退避重试。
     """
     if Path(cache_path).exists():
         print("加载缓存的 embeddings...")
         return np.load(cache_path)
-    
-    print("生成新的 embeddings...")
-    texts = [p["text_for_embedding"] for p in patterns]
 
-    BATCH_SIZE = 100
+    checkpoint_path = Path(cache_path).with_suffix(".checkpoint.npy")
+    # text-embedding-3-small max is 8,191 tokens (~32K chars). Truncate conservatively.
+    MAX_CHARS = 30_000
+    texts = [p["text_for_embedding"][:MAX_CHARS] for p in patterns]
+    BATCH_SIZE = 50
     all_embeddings = []
+    start_idx = 0
 
-    for i in range(0, len(texts), BATCH_SIZE):
+    if checkpoint_path.exists():
+        saved = np.load(checkpoint_path)
+        all_embeddings = list(saved)
+        start_idx = len(all_embeddings)
+        print(f"恢复进度：已有 {start_idx} 条，继续从第 {start_idx} 条开始...")
+    else:
+        print("生成新的 embeddings...")
+
+    for i in range(start_idx, len(texts), BATCH_SIZE):
         batch = texts[i:i + BATCH_SIZE]
-        response = client.embeddings.create(
-            input=batch,
-            model="text-embedding-3-small"
-        )
-        all_embeddings.extend([e.embedding for e in response.data])
+        _embed_batch(client, batch, all_embeddings)
+
         print(f"  {min(i + BATCH_SIZE, len(texts))}/{len(texts)} embeddings 生成完成")
+
+        # Save checkpoint every 10 batches (~1000 patterns)
+        if ((i - start_idx) // BATCH_SIZE) % 10 == 9:
+            np.save(checkpoint_path, np.array(all_embeddings))
 
     embeddings = np.array(all_embeddings)
     Path(cache_path).parent.mkdir(parents=True, exist_ok=True)
     np.save(cache_path, embeddings)
+
+    if checkpoint_path.exists():
+        checkpoint_path.unlink()
+
     return embeddings
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:

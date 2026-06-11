@@ -23,27 +23,50 @@ MAX_RETRIES = 3
 
 # 按 category 采集，每个 category 目标数量
 CATEGORIES = [
-    # 上衣类（最大品类，占大头）
-    ("sweater pullover",     1200),  # 现有 ~486，补到 1200
-    ("cardigan",             1200),  # 现有 591，补到 1200
-    ("vest sleeveless top",   800),  # 现有 ~512，补到 800
-    ("top tank tee",          500),  # 现有 ~310，补到 500
-    ("coat jacket",           200),  # 现有 25，大幅补充
+    # 上衣类
+    ("sweater pullover",     5000),  # 现有 ~1200，扩到 5000
+    ("cardigan",             4000),  # 现有 ~1200，扩到 4000
+    ("vest sleeveless top",  3000),  # 现有 ~800，扩到 3000
+    ("top tank tee",         2000),  # 现有 ~500，扩到 2000
+    ("coat jacket",           800),  # 现有 ~200，扩到 800
 
     # 配件类
-    ("hat beanie",            700),  # 现有 ~332，补到 700
-    ("shawl wrap",            600),  # 现有 265，补到 600
-    ("cowl scarf",            500),  # 现有 ~437，补到 500
-    ("mittens gloves",        400),  # 现有 ~305，补到 400
-    ("socks",                 800),  # 现有 ~396，补到 800
+    ("hat beanie",           3000),  # 现有 ~700，扩到 3000
+    ("shawl wrap",           2500),  # 现有 ~600，扩到 2500
+    ("cowl scarf",           2000),  # 现有 ~500，扩到 2000
+    ("mittens gloves",       1500),  # 现有 ~400，扩到 1500
+    ("socks",                3000),  # 现有 ~800，扩到 3000
 
     # 家居/婴儿
-    ("blanket throw",         600),  # 现有 ~415，补到 600
-    ("baby knitting",         500),  # 现有 ~300，补到 500
+    ("blanket throw",        2000),  # 现有 ~600，扩到 2000
+    ("baby knitting",        1500),  # 现有 ~500，扩到 1500
 ]
-# 总目标：8000 条
-# 清洗后（去掉无 notes 约 10%）：约 7200 条
-# 加上重复率约 10%：实际约 6500-7000 条唯一 pattern
+# 总目标：约 30300 条
+# 清洗后估计：约 30000 条唯一 pattern
+
+# CATEGORIES = [
+#     # 上衣类（最大品类，占大头）
+#     ("sweater pullover",     1200),  # 现有 ~486，补到 1200
+#     ("cardigan",             1200),  # 现有 591，补到 1200
+#     ("vest sleeveless top",   800),  # 现有 ~512，补到 800
+#     ("top tank tee",          500),  # 现有 ~310，补到 500
+#     ("coat jacket",           200),  # 现有 25，大幅补充
+
+#     # 配件类
+#     ("hat beanie",            700),  # 现有 ~332，补到 700
+#     ("shawl wrap",            600),  # 现有 265，补到 600
+#     ("cowl scarf",            500),  # 现有 ~437，补到 500
+#     ("mittens gloves",        400),  # 现有 ~305，补到 400
+#     ("socks",                 800),  # 现有 ~396，补到 800
+
+#     # 家居/婴儿
+#     ("blanket throw",         600),  # 现有 ~415，补到 600
+#     ("baby knitting",         500),  # 现有 ~300，补到 500
+# ]
+# # 总目标：8000 条
+# # 清洗后（去掉无 notes 约 10%）：约 7200 条
+# # 加上重复率约 10%：实际约 6500-7000 条唯一 pattern
+
 
 def get_with_retry(url: str, params: dict = None) -> dict:
     for attempt in range(MAX_RETRIES):
@@ -117,6 +140,8 @@ def fetch_category(query: str, target_count: int, seen_ids: set) -> list[dict]:
             collected.append(detail)
             seen_ids.add(detail["id"])
 
+        print(f"  🕒 Page {page} fetched {len(details)} patterns")
+
         page += 1
 
     return collected
@@ -132,7 +157,13 @@ def main():
         print(f"\n📂 采集 '{query}'（目标 {target_count} 条）...")
         results = fetch_category(query, target_count, seen_ids)
         all_patterns.extend(results)
-        print(f"  ✅ 新增 {len(results)} 条，总计 {len(all_patterns)} 条（去重后）")
+
+        # 每采集完一个类别就保存一次，避免丢失数据
+        OUTPUT_PATH.write_text(
+            json.dumps(all_patterns, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"  ✅ 新增 {len(results)} 条，总计 {len(all_patterns)} 条（去重后），已保存")
 
     OUTPUT_PATH.write_text(
         json.dumps(all_patterns, ensure_ascii=False, indent=2),
