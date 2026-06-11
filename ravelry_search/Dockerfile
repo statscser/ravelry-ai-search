@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+COPY data/patterns.json data/embeddings.npy data/golden_set.json ./data/
 
 EXPOSE 8501
 
