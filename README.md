@@ -21,7 +21,7 @@ User query (natural language)
         │
         ▼
 ┌───────────────────────┐
-│   Query Understanding  │  GPT-4o-mini + instructor + Pydantic
+│   Query Understanding  │  claude-haiku-4-5 + instructor + Pydantic
 │   PatternSearchIntent  │  extracts: semantic_query, craft, yarn_weight,
 │                        │  needle_size, free_only, min_rating,
 │                        │  include/exclude_fibers, categories
@@ -42,7 +42,7 @@ User query (natural language)
             │ top 10 results (score ≥ 0.3)
             ▼
 ┌───────────────────────┐
-│  GPT-4o-mini Recs      │  one-sentence recommendation for top 3 results
+│  claude-haiku-4-5 Recs │  one-sentence recommendation for top 3 results
 │  + Streamlit UI        │  sort by relevance / rating / favorites
 └───────────────────────┘
 ```
@@ -66,6 +66,28 @@ Evaluated on a hand-annotated golden set of 20 queries across 4 categories (基�
 **Key insight:** BM25 increases candidate recall (finds more relevant patterns) but degrades ranking (exact keyword match ≠ semantic relevance). The Cohere Cross-Encoder restores ranking quality while keeping the recall gains — net result is higher precision across the board.
 
 **Eval methodology:** Golden set annotated using three candidate sources (vector search + keyword search + structured field query) to avoid annotation bias. Binary relevance labels (relevant / not relevant), borderline excluded. Precision@10 as primary metric due to variable ground-truth set sizes.
+
+---
+
+## Cost Optimization
+
+| Change | Before | After | Saving |
+|--------|--------|-------|--------|
+| Query parsing model | gpt-4o-mini ($0.0001) | claude-haiku ($0.00003) | -70% |
+| Recommendation model | gpt-4o-mini ($0.0002) | claude-haiku ($0.00006) | -70% |
+| Exact query cache | no cache | cache hit = $0 | -100% on repeat queries |
+| **Total per search** | **~$0.0003** | **~$0.00009** | **-70%** |
+
+Switching decision was data-driven: ran haiku vs gpt-4o-mini on the 20-query golden set, both achieved 100% parsing accuracy, confirming haiku was safe to adopt.
+
+---
+
+## Production Features
+
+- **Observability:** Full Langfuse tracing across parse → retrieve → rerank → recommend pipeline. Token usage and cost tracked per span. Admin dashboard shows daily search count, avg cost, P50/P95 latency, top queries.
+- **Guardrails:** Keyword-based off-topic detection (no LLM cost). Three-tier fallback: relax filters → top-rated patterns → user guidance.
+- **Caching:** Exact-match query cache for `parse_query` — repeated searches return instantly at $0 cost.
+- **Deployment:** Dockerized, deployed on Google Cloud Run. Auto-scales to zero when idle.
 
 ---
 
@@ -99,7 +121,7 @@ Negative conditions like "no mohair" are nearly invisible in query embeddings. S
 ### 1. Install dependencies
 
 ```bash
-cd ravelry_v0
+cd ravelry_search
 pip install -r requirements.txt
 # or with uv:
 uv sync
@@ -107,20 +129,24 @@ uv sync
 
 ### 2. Configure API keys
 
-Create `ravelry_v0/.env`:
+Create `ravelry_search/.env`:
 
 ```
 RAVELRY_USERNAME=your_ravelry_username
 RAVELRY_PASSWORD=your_ravelry_api_password
 OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
 COHERE_API_KEY=...
+LANGFUSE_PUBLIC_KEY=...
+LANGFUSE_SECRET_KEY=...
+LANGFUSE_HOST=https://cloud.langfuse.com
 ```
 
 Get Ravelry API credentials at `ravelry.com/pro/developer` (free, non-commercial use).
 
 ### 3. Generate data
 
-**Step 1 — Collect patterns** (~8,000 patterns with notes + photos, ~40 min):
+**Step 1 — Collect patterns** (~29,000 patterns with notes + photos, ~3 hours):
 
 ```bash
 python collect_data.py
@@ -129,7 +155,7 @@ python collect_data.py
 Writes `data/patterns.json`. Filters out patterns without notes or cover photos.
 Each pattern includes a pre-built `text_for_embedding` field.
 
-**Step 2 — Generate embeddings** (OpenAI `text-embedding-3-small`, ~$0.10):
+**Step 2 — Generate embeddings** (OpenAI `text-embedding-3-small`, ~$0.30):
 
 ```bash
 python rag.py
@@ -160,14 +186,14 @@ streamlit run app.py
 
 ## Run with Docker
 
-Make sure you have generated the data files under `ravelry_v0/data/` first (see **Generate data** above), then:
+Data files are baked into the image. Build and run:
 
 ```bash
-cd ravelry_v0
+cd ravelry_search
 docker compose up --build
 ```
 
-Open http://localhost:8501. The `data/` directory is mounted as a volume so the image stays small and you can regenerate data without rebuilding.
+Open http://localhost:8501.
 
 ---
 
@@ -175,12 +201,15 @@ Open http://localhost:8501. The `data/` directory is mounted as a volume so the 
 
 | Component | Cost per search | Latency |
 |-----------|----------------|---------|
-| Query parsing (GPT-4o-mini) | ~$0.0001 | ~0.5s |
+| Query parsing (claude-haiku) | ~$0.00003 | ~0.5s |
 | Query embedding | ~$0.000001 | ~0.2s |
 | Hybrid search (BM25 + vector) | $0 | ~0.3s |
 | Cohere rerank | $0 (free tier) | ~0.5s |
-| Recommendations (GPT-4o-mini, top 3) | ~$0.0002 | ~1-2s (parallel) |
-| **Total** | **~$0.0003** | **~5-10s** |
+| Recommendations (claude-haiku, top 3, parallel) | ~$0.00006 | ~1-2s |
+| **Total** | **~$0.00009** | **~6-7s avg** |
+| **Cache hit** | **$0** | **<0.1s** |
+
+Note: 70% cost reduction vs original gpt-4o-mini implementation ($0.0003 → $0.00009) achieved by switching to claude-haiku and adding exact-match query caching.
 
 ---
 
@@ -192,8 +221,8 @@ All other `data/` files are excluded from git (too large) and must be generated 
 
 | File | Size | Generated by |
 |------|------|-------------|
-| `data/patterns.json` | ~170 MB | `collect_data.py` |
-| `data/embeddings.npy` | ~94 MB | `rag.py` |
+| `data/patterns.json` | ~600 MB | `collect_data.py` |
+| `data/embeddings.npy` | ~320 MB | `rag.py` |
 | `data/eval_results_*.json` | ~4 KB each | `eval.py` |
 
 ---
@@ -202,7 +231,9 @@ All other `data/` files are excluded from git (too large) and must be generated 
 
 - **Retrieval:** OpenAI `text-embedding-3-small`, `rank_bm25`, Chroma (in-memory)
 - **Reranking:** Cohere `rerank-multilingual-v3.0`
-- **Query Understanding:** `instructor` + Pydantic + GPT-4o-mini
-- **Recommendations:** GPT-4o-mini
+- **Query Understanding:** `instructor` + Pydantic + `claude-haiku-4-5`
+- **Recommendations:** `claude-haiku-4-5` (parallel, top 3)
+- **Observability:** Langfuse (tracing, cost tracking, admin dashboard)
+- **Deployment:** Docker, Google Cloud Run
 - **UI:** Streamlit
-- **Data:** Ravelry REST API (Basic Auth), 8,000 patterns across 12 categories
+- **Data:** Ravelry REST API (Basic Auth), ~29,000 patterns across 12 categories
