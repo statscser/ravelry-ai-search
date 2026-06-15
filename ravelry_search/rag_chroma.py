@@ -155,12 +155,24 @@ def _build_where(intent: PatternSearchIntent) -> dict | None:
         return conditions[0]
     return {"$and": conditions}
 
-def load_collection() -> tuple[chromadb.Collection, list[dict]]:
+def load_collection() -> tuple[chromadb.Collection, list[dict], np.ndarray]:
     """Load patterns and pre-computed embeddings into an in-memory Chroma collection.
-    Returns both the collection and the original patterns list for full data access.
+    Returns (collection, patterns, embeddings) so callers don't need a second np.load.
     """
+    _debug = os.environ.get("RAVELRY_DEBUG_MEMORY") == "1"
+
+    def _dmem(label: str) -> None:
+        if _debug:
+            import psutil
+            rss = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
+            print(f"[内存][load_collection] {label}: {rss:,.1f} MB")
+
+    _dmem("开始 (read_text 前)")
     patterns = json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
+    _dmem(f"json.loads 完成 ({len(patterns):,} patterns)")
+
     embeddings = np.load(EMBEDDINGS_PATH)
+    _dmem(f"np.load 完成 (shape={embeddings.shape}, {embeddings.nbytes / 1024**2:.1f} MB)")
 
     client = chromadb.Client()
     if COLLECTION_NAME in {c.name for c in client.list_collections()}:
@@ -170,19 +182,25 @@ def load_collection() -> tuple[chromadb.Collection, list[dict]]:
     ids = [str(p["id"]) for p in patterns]
     documents = [p.get("text_for_embedding", "") for p in patterns]
     metadatas = [build_metadata(p) for p in patterns]
-    embedding_list = embeddings.tolist()
 
-    CHUNK = 500
+    # Convert to Python list one batch at a time to avoid a ~1.7 GB peak from
+    # calling embeddings.tolist() on the full array at once.
+    CHUNK = 1000
+    _dmem("batched collection.add 循环开始前")
     for start in range(0, len(ids), CHUNK):
         collection.add(
             ids=ids[start : start + CHUNK],
             documents=documents[start : start + CHUNK],
             metadatas=metadatas[start : start + CHUNK],
-            embeddings=embedding_list[start : start + CHUNK],
+            embeddings=embeddings[start : start + CHUNK].tolist(),
         )
+        if _debug and (start + CHUNK) % 5000 < CHUNK:
+            _dmem(f"  已处理 {min(start + CHUNK, len(ids)):,}/{len(ids):,} 条")
 
+    _dmem("collection.add 全部完成")
     print(f"Loaded {collection.count()} patterns into Chroma.")
-    return collection, patterns
+    _dmem("函数返回前")
+    return collection, patterns, embeddings
 
 
 def search(
@@ -233,7 +251,7 @@ def search(
 
 def main():
     openai_client = OpenAI()
-    collection, patterns = load_collection()  # 解包 tuple
+    collection, patterns, _ = load_collection()
 
     query = input("\n搜索编织图解：").strip()
 

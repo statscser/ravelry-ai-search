@@ -22,7 +22,7 @@ QUERIES = [
 
 def main():
     client = OpenAI()
-    collection, patterns = load_collection()
+    collection, patterns, _ = load_collection()
 
     eval_results = []
 

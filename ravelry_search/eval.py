@@ -61,10 +61,8 @@ def evaluate(version: str = "v0") -> None:
         return
     print(f"Loaded {len(golden)} annotated queries.\n")
 
-    embeddings = np.load(Path(__file__).parent / "data" / "embeddings.npy")
-
     openai_client = OpenAI()
-    collection, patterns = load_collection()
+    collection, patterns, embeddings = load_collection()
 
     rows = []
 

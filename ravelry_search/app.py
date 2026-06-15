@@ -1,9 +1,7 @@
 import datetime
 import statistics
 from collections import Counter
-from pathlib import Path
 
-import numpy as np
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -178,8 +176,7 @@ def _fetch_admin_stats() -> dict:
 
 @st.cache_resource(show_spinner="Loading pattern index…")
 def _load_resources():
-    _collection, _patterns = load_collection()
-    _embeddings = np.load(Path(__file__).parent / "data" / "embeddings.npy")
+    _collection, _patterns, _embeddings = load_collection()
     return _collection, _patterns, _embeddings
 
 _collection, _patterns, _embeddings = _load_resources()

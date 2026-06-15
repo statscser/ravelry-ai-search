@@ -129,7 +129,7 @@ def main() -> None:
     patterns   = json.loads((Path(__file__).parent / "data" / "patterns.json").read_text(encoding="utf-8"))
     embeddings = np.load(Path(__file__).parent / "data" / "embeddings.npy")
     openai_client = OpenAI()
-    load_collection()
+    load_collection()  # returns (collection, patterns, embeddings) — unused in demo
 
     query  = "cable knit sweater"
     intent = parse_query(query, openai_client)
