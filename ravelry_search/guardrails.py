@@ -3,6 +3,11 @@ guardrails.py — Input validation and fallback strategies.
 All checks are keyword-based (no LLM) for speed and cost efficiency.
 """
 
+from typing import Optional
+
+from constants import FALLBACK_MIN_RATING, FALLBACK_MIN_RATING_COUNT
+from rag_chroma import PatternSearchIntent
+
 KNITTING_KEYWORDS = {
     # English
     "knit", "knitting", "crochet", "yarn", "pattern", "needle", "hook",
@@ -24,20 +29,26 @@ OFF_TOPIC_RESPONSE = (
 )
 
 def is_knitting_related(query: str) -> bool:
-    """Keyword-based check — fast, no LLM cost."""
+    """Return True if the query contains at least one knitting/crochet keyword.
+
+    Purely keyword-based — no LLM cost, runs in microseconds.
+    Used as a pre-filter before calling the full search pipeline.
+    """
     q = query.lower()
     return any(kw in q for kw in KNITTING_KEYWORDS)
 
 
 def get_fallback_patterns(patterns: list[dict], top_n: int = 10) -> list[dict]:
-    """
-    Fallback tier 2: return top-rated patterns when search yields no results.
-    Sorted by rating_average descending, minimum 10 ratings required.
+    """Return top-rated patterns as a last-resort fallback (tier 2).
+
+    Filters to patterns with rating_average >= FALLBACK_MIN_RATING and
+    at least FALLBACK_MIN_RATING_COUNT ratings, then returns the top_n
+    sorted by rating descending.
     """
     candidates = [
         p for p in patterns
-        if (p.get("rating_average") or 0) >= 4.5
-        and (p.get("rating_count") or 0) >= 10
+        if (p.get("rating_average") or 0) >= FALLBACK_MIN_RATING
+        and (p.get("rating_count") or 0) >= FALLBACK_MIN_RATING_COUNT
     ]
     return sorted(
         candidates,
@@ -46,11 +57,14 @@ def get_fallback_patterns(patterns: list[dict], top_n: int = 10) -> list[dict]:
     )[:top_n]
 
 
-def relax_intent(intent):
-    """
-    Fallback tier 1: relax constraints one at a time.
-    Returns a new intent with the most restrictive filter removed.
-    Priority: min_rating > yarn_weight > needle_size > craft
+def relax_intent(
+    intent: PatternSearchIntent,
+) -> tuple[PatternSearchIntent, Optional[str]]:
+    """Remove the most restrictive filter from intent and return a copy (tier 1 fallback).
+
+    Relaxation priority: min_rating → yarn_weight → needle_size → craft.
+    Returns (relaxed_intent, message) where message describes what was removed,
+    or (relaxed_intent, None) if no filters remain to relax.
     """
     relaxed = intent.model_copy()
     if relaxed.min_rating > 0:

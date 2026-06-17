@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Any, Literal, Optional
 
 import anthropic
 import chromadb
@@ -10,9 +11,10 @@ from openai import OpenAI
 
 import instructor
 from pydantic import BaseModel
-from typing import Optional, Literal
 
 from langfuse.decorators import observe, langfuse_context
+
+from constants import HAIKU_MODEL, PARSE_MAX_TOKENS, CHROMA_BATCH_SIZE, EMBEDDING_MODEL
 
 load_dotenv()
 
@@ -21,7 +23,7 @@ EMBEDDINGS_PATH = Path(__file__).parent / "data" / "embeddings.npy"
 COLLECTION_NAME = "ravelry_patterns"
 
 
-def _safe(value, default=""):
+def _safe(value: Any, default: Any = "") -> Any:
     """Return value if not None, else default — Chroma rejects None in metadata."""
     return value if value is not None else default
 
@@ -72,11 +74,20 @@ _parse_cache: dict[str, PatternSearchIntent] = {}
 
 @observe(as_type="generation", capture_input=False)
 def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
+    """Parse a natural-language query into structured search intent via Haiku.
+
+    Args:
+        query: Raw user search string (English or Chinese).
+        client: Unused OpenAI client kept for API compatibility; Anthropic is used internally.
+
+    Returns:
+        PatternSearchIntent with semantic_query, filters, and fiber lists populated.
+    """
     langfuse_context.update_current_observation(input=query)
     instructor_client = instructor.from_anthropic(anthropic.Anthropic())
     response = instructor_client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=500,
+        model=HAIKU_MODEL,
+        max_tokens=PARSE_MAX_TOKENS,
         system=SYSTEM_PROMPT,
         response_model=PatternSearchIntent,
         messages=[{"role": "user", "content": query}]
@@ -92,6 +103,11 @@ def parse_query(query: str, client: OpenAI) -> PatternSearchIntent:
 
 @observe(as_type="span", name="parse_query_cached", capture_input=False)
 def parse_query_cached(query: str, client: OpenAI) -> PatternSearchIntent:
+    """Return a cached PatternSearchIntent, calling parse_query on first miss.
+
+    Cache key is ``query.strip().lower()`` — case-insensitive, whitespace-normalised.
+    Cache hit/miss is logged to the active Langfuse span as metadata.
+    """
     key = query.strip().lower()
     cache_hit = key in _parse_cache
     if not cache_hit:
@@ -132,7 +148,12 @@ def build_metadata(pattern: dict) -> dict:
         "permalink": _safe(pattern.get("permalink")),
     }
 
-def _build_where(intent: PatternSearchIntent) -> dict | None:
+def _build_where(intent: Optional[PatternSearchIntent]) -> dict | None:
+    """Build a Chroma ``$where`` filter dict from a parsed search intent.
+
+    Returns None when intent is None or no filterable fields are set,
+    which tells Chroma to skip metadata filtering entirely.
+    """
     if intent is None:
         return None
     conditions = []
@@ -185,17 +206,16 @@ def load_collection() -> tuple[chromadb.Collection, list[dict], np.ndarray]:
 
     # Convert to Python list one batch at a time to avoid a ~1.7 GB peak from
     # calling embeddings.tolist() on the full array at once.
-    CHUNK = 1000
     _dmem("batched collection.add 循环开始前")
-    for start in range(0, len(ids), CHUNK):
+    for start in range(0, len(ids), CHROMA_BATCH_SIZE):
         collection.add(
-            ids=ids[start : start + CHUNK],
-            documents=documents[start : start + CHUNK],
-            metadatas=metadatas[start : start + CHUNK],
-            embeddings=embeddings[start : start + CHUNK].tolist(),
+            ids=ids[start : start + CHROMA_BATCH_SIZE],
+            documents=documents[start : start + CHROMA_BATCH_SIZE],
+            metadatas=metadatas[start : start + CHROMA_BATCH_SIZE],
+            embeddings=embeddings[start : start + CHROMA_BATCH_SIZE].tolist(),
         )
-        if _debug and (start + CHUNK) % 5000 < CHUNK:
-            _dmem(f"  已处理 {min(start + CHUNK, len(ids)):,}/{len(ids):,} 条")
+        if _debug and (start + CHROMA_BATCH_SIZE) % 5000 < CHROMA_BATCH_SIZE:
+            _dmem(f"  已处理 {min(start + CHROMA_BATCH_SIZE, len(ids)):,}/{len(ids):,} 条")
 
     _dmem("collection.add 全部完成")
     print(f"Loaded {collection.count()} patterns into Chroma.")
@@ -209,7 +229,7 @@ def search(
     openai_client: OpenAI,
     patterns: list[dict],
     top_k: int = 5,
-    intent: PatternSearchIntent = None,
+    intent: Optional[PatternSearchIntent] = None,
 ) -> list[dict]:
     """
     Embed query with OpenAI, query Chroma with optional metadata filters.
@@ -218,7 +238,7 @@ def search(
     query_embedding = (
         openai_client.embeddings.create(
             input=[query],
-            model="text-embedding-3-small",
+            model=EMBEDDING_MODEL,
         )
         .data[0]
         .embedding

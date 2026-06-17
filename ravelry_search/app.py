@@ -1,16 +1,25 @@
 import datetime
+import os
 import statistics
 from collections import Counter
+from typing import Optional
 
+import numpy as np
+import requests
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
+from requests.auth import HTTPBasicAuth
 
 from langfuse.decorators import observe, langfuse_context
 
+from constants import (
+    MIN_RESULTS, SCORE_THRESHOLD, REC_TOP_N,
+    COHERE_COST_PER_CALL, COHERE_RERANK_MODEL,
+)
 from guardrails import is_knitting_related, get_fallback_patterns, relax_intent, OFF_TOPIC_RESPONSE
 from hybrid_search import reranked_search
-from rag_chroma import load_collection, parse_query_cached
+from rag_chroma import load_collection, parse_query_cached, PatternSearchIntent
 from recommendation import generate_recommendations_batch
 
 load_dotenv()
@@ -21,41 +30,25 @@ st.title("🧶 Ravelry AI Search")
 
 # ── Search pipeline (single Langfuse root trace) ──────────────────────────────
 
-@observe(name="ravelry_search", capture_input=False, capture_output=False)
-def run_search(
-    query: str,
+def _apply_fallbacks(
+    intent: PatternSearchIntent,
+    results: list[dict],
     patterns: list[dict],
-    embeddings,
+    embeddings: np.ndarray,
     openai_client: OpenAI,
-    top_k: int = 20,
-) -> tuple:
+    top_k: int,
+) -> tuple[list[dict], Optional[str]]:
+    """Apply two-tier fallback when reranked results are empty.
+
+    Tier 1: relax the most restrictive filter and re-run reranked_search.
+    Tier 2: return globally top-rated patterns.
+    Langfuse metadata is updated on the active span so fallback is visible in traces.
+
+    Returns:
+        (results, relax_msg) where relax_msg is None if no fallback was triggered.
     """
-    Full search pipeline under one Langfuse trace:
-      parse_query → reranked_search → generate_recommendations_batch (top-3)
-
-    Returns (intent, results, rec_map) where rec_map is {pattern_id: rec_text}.
-    """
-    langfuse_context.update_current_observation(input={"query": query, "top_k": top_k})
-    intent = parse_query_cached(query, openai_client)
-
-    results = reranked_search(
-        query=intent.semantic_query,
-        patterns=patterns,
-        embeddings=embeddings,
-        openai_client=openai_client,
-        top_k=top_k,
-        intent=intent,
-    )
-
-    # Dynamic threshold: keep scores >= 0.3, guarantee at least 5 results
-    MIN_RESULTS     = 5
-    SCORE_THRESHOLD = 0.3
-    filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
-    results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
-
-    # Tier 1: relax constraints and retry if no results
     relax_msg = None
-    if not results and intent:
+    if not results:
         relaxed_intent, relax_msg = relax_intent(intent)
         if relax_msg:
             results = reranked_search(
@@ -71,9 +64,8 @@ def run_search(
             except Exception:
                 pass
 
-    # Tier 2: return top-rated patterns if still no results
     if not results:
-        results = get_fallback_patterns(patterns, top_n=10)
+        results = get_fallback_patterns(patterns)
         try:
             langfuse_context.update_current_observation(
                 metadata={"fallback": "returned top-rated patterns"}
@@ -81,14 +73,51 @@ def run_search(
         except Exception:
             pass
 
-    recs    = generate_recommendations_batch(query=query, patterns=results[:3],
-                                             client=openai_client, top_n=3)
-    rec_map = {p["id"]: rec for p, rec in zip(results[:3], recs)}
+    return results, relax_msg
+
+
+@observe(name="ravelry_search", capture_input=False, capture_output=False)
+def run_search(
+    query: str,
+    patterns: list[dict],
+    embeddings: np.ndarray,
+    openai_client: OpenAI,
+    top_k: int = 20,
+) -> tuple[PatternSearchIntent, list[dict], dict[int, str], Optional[str]]:
+    """Run the full search pipeline under a single Langfuse root trace.
+
+    Pipeline: parse_query_cached → reranked_search → fallbacks → recommendations.
+
+    Returns:
+        (intent, results, rec_map, relax_msg) where rec_map is {pattern_id: rec_text}
+        and relax_msg describes any filter that was relaxed, or None.
+    """
+    langfuse_context.update_current_observation(input={"query": query, "top_k": top_k})
+    intent = parse_query_cached(query, openai_client)
+
+    results = reranked_search(
+        query=intent.semantic_query,
+        patterns=patterns,
+        embeddings=embeddings,
+        openai_client=openai_client,
+        top_k=top_k,
+        intent=intent,
+    )
+
+    # Dynamic threshold: keep scores >= SCORE_THRESHOLD, guarantee at least MIN_RESULTS
+    filtered = [p for p in results if p.get("_cohere_score", 0) >= SCORE_THRESHOLD]
+    results  = filtered if len(filtered) >= MIN_RESULTS else results[:MIN_RESULTS]
+
+    results, relax_msg = _apply_fallbacks(intent, results, patterns, embeddings, openai_client, top_k)
+
+    recs    = generate_recommendations_batch(query=query, patterns=results[:REC_TOP_N],
+                                             client=openai_client, top_n=REC_TOP_N)
+    rec_map = {p["id"]: rec for p, rec in zip(results[:REC_TOP_N], recs)}
 
     try:
         langfuse_context.update_current_observation(
             metadata={
-                "cohere_model": "rerank-multilingual-v3.0",
+                "cohere_model": COHERE_RERANK_MODEL,
                 "top_k": top_k,
                 "intent": {
                     "craft": intent.craft,
@@ -105,6 +134,15 @@ def run_search(
 
 
 def _sort_results(results: list[dict], sort_option: str) -> list[dict]:
+    """Re-order results by the user's chosen sort key without re-running the search.
+
+    Args:
+        results: Pattern dicts from the search pipeline.
+        sort_option: One of "Relevance" | "Rating" | "Favorites".
+
+    Returns:
+        The same list sorted by the chosen key; "Relevance" preserves Cohere order.
+    """
     if sort_option == "Rating":
         return sorted(results, key=lambda p: p.get("rating_average") or 0, reverse=True)
     if sort_option == "Favorites":
@@ -116,10 +154,12 @@ def _sort_results(results: list[dict], sort_option: str) -> list[dict]:
 
 @st.cache_data(ttl=60, show_spinner=False)
 def _fetch_admin_stats() -> dict:
-    try:
-        import os, requests
-        from requests.auth import HTTPBasicAuth
+    """Fetch today's search trace statistics from the Langfuse REST API.
 
+    Results are cached for 60 s by Streamlit. Returns a dict with keys:
+    count, p50_latency, p95_latency, avg_cost, top_queries — or {error: str}.
+    """
+    try:
         host = os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com")
         public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
         secret_key = os.environ.get("LANGFUSE_SECRET_KEY")
@@ -159,7 +199,6 @@ def _fetch_admin_stats() -> dict:
         p50 = statistics.median(latencies) if latencies else None
         p95 = sorted(latencies)[int(len(latencies) * 0.95)] if len(latencies) >= 2 else (latencies[0] if latencies else None)
 
-        COHERE_COST_PER_CALL = 0.001
         avg_total_cost = (sum(llm_costs) / len(llm_costs) + COHERE_COST_PER_CALL) if llm_costs else None
 
         return {
@@ -176,6 +215,11 @@ def _fetch_admin_stats() -> dict:
 
 @st.cache_resource(show_spinner="Loading pattern index…")
 def _load_resources():
+    """Load patterns, embeddings, and Chroma collection once per process lifetime.
+
+    Uses st.cache_resource so the heavy data is shared across all Streamlit
+    sessions rather than reloaded per user.
+    """
     _collection, _patterns, _embeddings = load_collection()
     return _collection, _patterns, _embeddings
 

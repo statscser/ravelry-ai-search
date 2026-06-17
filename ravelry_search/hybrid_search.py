@@ -13,8 +13,15 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from rank_bm25 import BM25Okapi
 
+from typing import Any, Optional
+
 from rag_chroma import PatternSearchIntent, parse_query
 from langfuse.decorators import observe, langfuse_context
+
+from constants import (
+    EMBEDDING_MODEL, RRF_K, RERANK_CANDIDATES, COHERE_RERANK_MODEL,
+    MAX_RETRIES, RETRY_WAIT_BASE_S,
+)
 
 load_dotenv()
 
@@ -25,6 +32,11 @@ EMBEDDINGS_PATH = Path(__file__).parent / "data" / "embeddings.npy"
 # ── Text / tokenisation ────────────────────────────────────────────────────────
 
 def _bm25_text(p: dict) -> str:
+    """Build a lightweight text representation of a pattern for BM25 indexing.
+
+    Concatenates name, craft, yarn weight, categories, and attributes so that
+    keyword search can match on structured fields without full pattern text.
+    """
     name       = p.get("name") or ""
     craft      = (p.get("craft") or {}).get("name", "")
     yarn_wt    = (p.get("yarn_weight") or {}).get("name", "")
@@ -34,12 +46,18 @@ def _bm25_text(p: dict) -> str:
 
 
 def _tokenize(text: str) -> list[str]:
+    """Lowercase and whitespace-split text into BM25 tokens."""
     return text.lower().split()
 
 
 # ── Metadata filter (mirrors rag_chroma._build_where) ─────────────────────────
 
 def _passes_filter(p: dict, intent: PatternSearchIntent) -> bool:
+    """Return True if pattern p satisfies all hard filters in intent.
+
+    Mirrors the Chroma ``$where`` clause so the same logic applies to the
+    in-memory BM25/vector pipeline without hitting the vector store.
+    """
     if intent.craft:
         if (p.get("craft") or {}).get("name", "") != intent.craft:
             return False
@@ -49,16 +67,20 @@ def _passes_filter(p: dict, intent: PatternSearchIntent) -> bool:
         if (p.get("rating_average") or 0.0) < intent.min_rating:
             return False
     if intent.yarn_weight:
-        yw = (p.get("yarn_weight") or {}).get("name", "")
-        if yw.lower() != intent.yarn_weight.lower():
+        yarn_weight_name = (p.get("yarn_weight") or {}).get("name", "")
+        if yarn_weight_name.lower() != intent.yarn_weight.lower():
             return False
+    # Compute needle sizes once; used by both min and max checks below.
+    needle_sizes = (
+        [n.get("metric") for n in (p.get("pattern_needle_sizes") or []) if n.get("metric")]
+        if intent.needle_size_min or intent.needle_size_max
+        else []
+    )
     if intent.needle_size_min:
-        sizes = [n.get("metric") for n in (p.get("pattern_needle_sizes") or []) if n.get("metric")]
-        if not sizes or max(sizes) < intent.needle_size_min:
+        if not needle_sizes or max(needle_sizes) < intent.needle_size_min:
             return False
     if intent.needle_size_max:
-        sizes = [n.get("metric") for n in (p.get("pattern_needle_sizes") or []) if n.get("metric")]
-        if not sizes or min(sizes) > intent.needle_size_max:
+        if not needle_sizes or min(needle_sizes) > intent.needle_size_max:
             return False
     return True
 
@@ -76,6 +98,43 @@ def _rrf_merge(rankings: list[list[int]], k: int = 60) -> list[tuple[int, float]
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
+def _cohere_rerank_with_retry(
+    cohere_client: cohere.ClientV2,
+    query: str,
+    documents: list[str],
+    top_k: int,
+) -> Any:
+    """Call Cohere rerank with exponential backoff on 429 rate limits.
+
+    Args:
+        cohere_client: Initialised Cohere v2 client.
+        query: Search query passed to the reranker.
+        documents: Candidate document strings to rerank.
+        top_k: Number of top results to return.
+
+    Returns:
+        Cohere RerankResponse whose ``.results`` list is ordered by relevance.
+
+    Raises:
+        Exception: Re-raises any non-429 error or a 429 after all retries exhausted.
+    """
+    for attempt in range(MAX_RETRIES):
+        try:
+            return cohere_client.rerank(
+                model=COHERE_RERANK_MODEL,
+                query=query,
+                documents=documents,
+                top_n=top_k,
+            )
+        except Exception as e:
+            if "429" in str(e) and attempt < MAX_RETRIES - 1:
+                wait = RETRY_WAIT_BASE_S * (attempt + 1)
+                print(f"  Rate limited, waiting {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+
+
 @observe(as_type="span", capture_input=False, capture_output=False)
 def hybrid_search(
     query: str,
@@ -84,7 +143,7 @@ def hybrid_search(
     openai_client: OpenAI,
     top_k: int = 20,
     chroma_collection=None,           # unused — kept for API compatibility
-    intent: PatternSearchIntent = None,
+    intent: Optional[PatternSearchIntent] = None,
 ) -> list[dict]:
     """
     BM25 + cosine-vector retrieval fused with RRF (k=60).
@@ -113,17 +172,18 @@ def hybrid_search(
     bm25_ranked = list(np.argsort(bm25_scores)[::-1])   # local indices, best first
 
     # ── 3. Vector ranking ─────────────────────────────────────────────────────
-    q_emb = np.array(
+    query_embedding = np.array(
         openai_client.embeddings.create(
-            input=[query], model="text-embedding-3-small"
+            input=[query], model=EMBEDDING_MODEL
         ).data[0].embedding
     )
-    denom      = np.linalg.norm(sub_embeddings, axis=1) * np.linalg.norm(q_emb) + 1e-9
-    sims       = np.dot(sub_embeddings, q_emb) / denom
-    vec_ranked = list(np.argsort(sims)[::-1])            # local indices, best first
+    # Cosine similarity: dot(A, b) / (‖A‖ * ‖b‖); +1e-9 guards against zero norms.
+    cosine_norms = np.linalg.norm(sub_embeddings, axis=1) * np.linalg.norm(query_embedding) + 1e-9
+    cosine_sims  = np.dot(sub_embeddings, query_embedding) / cosine_norms
+    vec_ranked   = list(np.argsort(cosine_sims)[::-1])   # local indices, best first
 
     # ── 4. RRF fusion ─────────────────────────────────────────────────────────
-    fused = _rrf_merge([bm25_ranked, vec_ranked], k=60)
+    fused = _rrf_merge([bm25_ranked, vec_ranked], k=RRF_K)
 
     bm25_rank_of = {sub_idx: rank + 1 for rank, sub_idx in enumerate(bm25_ranked)}
     vec_rank_of  = {sub_idx: rank + 1 for rank, sub_idx in enumerate(vec_ranked)}
@@ -134,7 +194,7 @@ def hybrid_search(
         p["_rrf_score"] = round(rrf_score, 6)
         p["_bm25_rank"] = bm25_rank_of[sub_idx]
         p["_vec_rank"]  = vec_rank_of[sub_idx]
-        p["_vec_sim"]   = round(float(sims[sub_idx]), 4)
+        p["_vec_sim"]   = round(float(cosine_sims[sub_idx]), 4)
         results.append(p)
 
     return results
@@ -149,12 +209,20 @@ def reranked_search(
     embeddings: np.ndarray,
     openai_client: OpenAI,
     top_k: int = 10,
-    intent: PatternSearchIntent = None,
+    intent: Optional[PatternSearchIntent] = None,
 ) -> list[dict]:
-    """
-    Retrieve top-20 candidates via hybrid_search, then rerank with
-    Cohere rerank-multilingual-v3.0. COHERE_API_KEY must be in .env.
-    Returns top_k results augmented with _cohere_score (and hybrid fields).
+    """Retrieve RERANK_CANDIDATES via hybrid_search, then rerank with Cohere.
+
+    Args:
+        query: Search query string.
+        patterns: Full pattern corpus loaded from patterns.json.
+        embeddings: Pre-computed numpy embedding matrix (shape N×D).
+        openai_client: OpenAI client used for query embedding.
+        top_k: Final number of results to return after reranking.
+        intent: Optional parsed filters; passed through to hybrid_search.
+
+    Returns:
+        Up to top_k pattern dicts augmented with ``_cohere_score`` and hybrid fields.
     """
     langfuse_context.update_current_observation(input={"query": query, "top_k": top_k})
     candidates = hybrid_search(
@@ -162,32 +230,15 @@ def reranked_search(
         patterns=patterns,
         embeddings=embeddings,
         openai_client=openai_client,
-        top_k=20,
+        top_k=RERANK_CANDIDATES,
         intent=intent,
     )
     if not candidates:
         return []
 
-    co = cohere.ClientV2()   # reads COHERE_API_KEY from env
-    documents = [p.get("text_for_embedding") or "" for p in candidates]
-
-    # retry with backoff for rate limit
-    for attempt in range(3):
-        try:
-            response = co.rerank(
-                model="rerank-multilingual-v3.0",
-                query=query,
-                documents=documents,
-                top_n=top_k,
-            )
-            break
-        except Exception as e:
-            if "429" in str(e) and attempt < 2:
-                wait = 10 * (attempt + 1)
-                print(f"  Rate limited, waiting {wait}s...")
-                time.sleep(wait)
-            else:
-                raise
+    cohere_client = cohere.ClientV2()   # reads COHERE_API_KEY from env
+    documents     = [p.get("text_for_embedding") or "" for p in candidates]
+    response      = _cohere_rerank_with_retry(cohere_client, query, documents, top_k)
 
     results = []
     for hit in response.results:

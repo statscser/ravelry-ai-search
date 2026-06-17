@@ -10,6 +10,8 @@ from openai import OpenAI
 
 from langfuse.decorators import observe, langfuse_context
 
+from constants import HAIKU_MODEL, REC_MAX_TOKENS, NOTES_EXCERPT_CHARS
+
 load_dotenv()
 
 SYSTEM_PROMPT = (
@@ -30,21 +32,30 @@ _USEFUL_ATTRS = {
 
 
 def _user_message(query: str, pattern: dict) -> str:
-    craft      = (pattern.get("craft") or {}).get("name", "")
-    yarn       = pattern.get("yarn_weight_description") or ""
-    categories = ", ".join(c["name"] for c in (pattern.get("pattern_categories") or []))
-    attributes = ", ".join(
+    """Build the user-turn prompt for a single recommendation generation.
+
+    Args:
+        query: The original user search query.
+        pattern: Full pattern dict from patterns.json.
+
+    Returns:
+        A formatted string with query context and pattern metadata for Haiku.
+    """
+    craft            = (pattern.get("craft") or {}).get("name", "")
+    yarn_weight_desc = pattern.get("yarn_weight_description") or ""
+    categories       = ", ".join(c["name"] for c in (pattern.get("pattern_categories") or []))
+    attributes       = ", ".join(
         a["permalink"]
         for a in (pattern.get("pattern_attributes") or [])
         if a.get("permalink") in _USEFUL_ATTRS
     )
-    notes = (pattern.get("notes") or "")[:200]
+    notes = (pattern.get("notes") or "")[:NOTES_EXCERPT_CHARS]
 
     lines = [
         f"Query: {query}",
         f"Pattern: {pattern.get('name', '')}",
         f"Craft: {craft}",
-        f"Yarn weight: {yarn}",
+        f"Yarn weight: {yarn_weight_desc}",
     ]
     if categories:
         lines.append(f"Categories: {categories}")
@@ -63,8 +74,8 @@ def generate_recommendation(query: str, pattern: dict, client: OpenAI) -> str:
     )
     anthropic_client = anthropic.Anthropic()
     response = anthropic_client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=80,
+        model=HAIKU_MODEL,
+        max_tokens=REC_MAX_TOKENS,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": _user_message(query, pattern)}],
     )
