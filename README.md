@@ -1,8 +1,15 @@
 # 🧶 Ravelry AI Search
 
-Semantic search for Ravelry knitting patterns. Type natural language queries like *"cozy cable knit sweater in DK weight"* or *"free beginner crochet hat"* and get ranked results with AI-generated recommendations.
+> **[🔍 Live Demo](https://ravelry-search-372988574601.us-central1.run.app)**
+> *(First load takes ~30s — Cloud Run cold start while loading 30K patterns)*
 
-**Why this exists:** Ravelry's built-in search is keyword-only. It can't handle semantic queries, negative conditions ("no mohair"), cross-language search (Chinese → English patterns), or combined filters extracted from natural language.
+A semantic search engine for knitting patterns, built to solve a real problem:
+Ravelry has 1M+ patterns but keyword-only search. This project adds natural
+language understanding, cross-lingual search, negative condition handling,
+and a full eval framework — built and iterated end-to-end as a portfolio project.
+
+**Why I built this:** Ravelry's search can't handle queries like
+*"bulky sweater, no mohair"* or *"夏天钩针背心"*. This does.
 
 ---
 
@@ -57,15 +64,40 @@ User query (natural language)
 
 Evaluated on a hand-annotated golden set of 20 queries across 4 categories (基础语义 / filter验证 / 细分特征 / 边缘案例).
 
-| Version | Change | MRR@20 | P@10 | Notes |
-|---------|--------|--------|------|-------|
-| v0 baseline | Vector search only | 0.849 | 0.490 | Pure cosine similarity |
-| v1 hybrid | + BM25 + RRF | 0.774 | 0.510 | BM25 improves recall, hurts ranking |
-| v2 reranked | + Cohere reranker | 0.828 | **0.585** | **+9.5pp P@10 vs baseline** |
+| Version | Change | MRR@20 | P@10 | Recall@10 | Notes |
+|---------|--------|--------|------|-----------|-------|
+| v0 baseline | Vector search only | 0.849 | 0.490 | 0.303 | Pure cosine similarity |
+| v1 hybrid | + BM25 + RRF | 0.774 | 0.510 | 0.278 | Precision ticked up, but recall and ranking both got worse |
+| v2 reranked | + Cohere reranker | 0.828 | **0.585** | **0.338** | **+19.4% relative P@10, +11.6% relative recall vs baseline** |
 
-**Key insight:** BM25 increases candidate recall (finds more relevant patterns) but degrades ranking (exact keyword match ≠ semantic relevance). The Cohere Cross-Encoder restores ranking quality while keeping the recall gains — net result is higher precision across the board.
+**Key insight:** The hybrid-search hypothesis was that BM25 would boost recall on exact-term queries (needle sizes, yarn weights). The data said otherwise: Recall@10 actually *dropped* (0.303 → 0.278) and ranking quality fell (MRR@20 0.849 → 0.774) — BM25's keyword matches weren't the same patterns vector search was missing, so RRF fusion just reshuffled results rather than surfacing more relevant ones. The Cohere Cross-Encoder reranking pass fixed both problems at once: P@10 rose to 0.585 and Recall@10 rose to 0.338, the best of all three versions on both metrics.
 
 **Eval methodology:** Golden set annotated using three candidate sources (vector search + keyword search + structured field query) to avoid annotation bias. Binary relevance labels (relevant / not relevant), borderline excluded. Precision@10 as primary metric due to variable ground-truth set sizes.
+
+---
+
+## Optimization Journey
+
+The project went through three measurable iterations:
+
+1. **v0 — baseline** (pure vector search): Established eval framework first —
+   20-query golden set with binary relevance labels across 4 query categories.
+   MRR@20=0.849, P@10=0.490, Recall@10=0.303.
+
+2. **v1 — hybrid search**: Added BM25 + RRF fusion. Hypothesis: exact terms
+   like "5mm needle" get diluted in embeddings. Result: precision ticked up
+   (P@10 +2pp) but recall actually *dropped* (Recall@10 0.303 → 0.278) and
+   ranking degraded (MRR@20 0.849 → 0.774) — BM25 keyword match ≠ semantic
+   relevance.
+
+3. **v2 — reranking**: Added Cohere Cross-Encoder on top of hybrid candidates.
+   The reranker sees query + document together, nearly recovering baseline
+   ranking quality (MRR@20 0.828) while lifting precision **and** recall
+   together: P@10 0.585 (+19.4% relative vs baseline), Recall@10 0.338
+   (+11.6% relative vs baseline).
+
+This iterative, eval-driven approach — measure first, optimize second — is the
+core engineering discipline this project was built to practice.
 
 ---
 
@@ -87,6 +119,12 @@ Switching decision was data-driven: ran haiku vs gpt-4o-mini on the 20-query gol
 - **Observability:** Full Langfuse tracing across parse → retrieve → rerank → recommend pipeline. Token usage and cost tracked per span. Admin dashboard shows daily search count, avg cost, P50/P95 latency, top queries.
 - **Guardrails:** Keyword-based off-topic detection (no LLM cost). Three-tier fallback: relax filters → top-rated patterns → user guidance.
 - **Caching:** Exact-match query cache for `parse_query` — repeated searches return instantly at $0 cost.
+- **Memory optimization:** Profiled startup with `debug_memory.py`
+  (psutil + background sampling thread). Found two OOM root causes:
+  (1) `embeddings.tolist()` converting full 30K array at once (+1,769MB peak),
+  fixed with batched processing (BATCH_SIZE=1000);
+  (2) `embeddings.npy` loaded twice independently, fixed by returning embeddings
+  from `load_collection()`. Peak RSS reduced from 4,137MB → 3,804MB.
 - **Deployment:** Dockerized, deployed on Google Cloud Run. Auto-scales to zero when idle.
 
 ---
@@ -237,3 +275,4 @@ All other `data/` files are excluded from git (too large) and must be generated 
 - **Deployment:** Docker, Google Cloud Run
 - **UI:** Streamlit
 - **Data:** Ravelry REST API (Basic Auth), ~29,000 patterns across 12 categories
+- **Profiling:** psutil + custom `debug_memory.py` for startup memory analysis
